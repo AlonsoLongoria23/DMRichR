@@ -75,6 +75,14 @@ annotateRegions <- function(regions = sigRegions,
     GenomeInfoDb::seqlevelsStyle(regionsCpG) <- "Ensembl" # Work around for organism not supported
   }
   
+
+  if(genome == "Dpulex"){
+    if("ChIPseeker" %in% (.packages())){
+        detach("package:ChIPseeker", unload = TRUE) 
+      }
+      devtools::install_github("wassimsalam01/ChIPseeker", force = TRUE)
+  }
+
   regionsCpG %>% 
     ChIPseeker::annotatePeak(TxDb = TxDb,
                              annoDb = annoDb,

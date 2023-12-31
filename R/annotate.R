@@ -246,8 +246,55 @@ getExons <- function(TxDb = TxDb){
 #' @export getCpGs
 #' 
 getCpGs <- function(genome = genome){
+
+  if(genome == "Dpulex"){
+    message('Building CpG islands...')
   
-  message('Building CpG islands...')
+    islands = read.csv("CGI-Dpulex.txt",
+                   header = TRUE,
+                   sep = "\t",
+                   colClasses = c(rep(NA,3), rep("NULL",5))) %>%
+    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
+    # GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>% Dpulex not supported by this function
+    plyranges::mutate(id = glue::glue("island:{seq_along(.)}"),
+                      type = "islands")
+  
+  message('Building CpG shores...')
+  
+  shores <- islands %>% 
+    plyranges::stretch(1000) %>% 
+    GenomicRanges::trim() %>%
+    GenomicRanges::setdiff(islands) %>%
+    plyranges::mutate(id = glue::glue("shore:{seq_along(.)}"),
+                      type = "shores")
+  
+  message('Building CpG shelves...')
+  
+  shelves <- shores %>% 
+    plyranges::stretch(1000) %>% 
+    GenomicRanges::trim() %>%
+    GenomicRanges::setdiff(islands) %>%
+    GenomicRanges::setdiff(shores) %>%
+    plyranges::mutate(id = glue::glue("shelf:{seq_along(.)}"),
+                      type = "shelves")
+  
+  message('Building inter-CpG-islands...')
+  
+  inter_cgi <- c(islands, shores, shelves) %>%
+    GenomicRanges::sort() %>%
+    GenomicRanges::gaps() %>%
+    plyranges::mutate(id = glue::glue("inter:{seq_along(.)}"),
+                      type = "inter")
+  
+  c(islands, shores, shelves, inter_cgi) %>%
+    GenomicRanges::sort() %>%
+    plyranges::mutate(tx_id = NA,
+                      gene_id = NA,
+                      symbol = NA) %>%
+    plyranges::select(id, tx_id, gene_id, symbol, type) %>% 
+    return()
+  } else {
+    message('Building CpG islands...')
   
   islands <- readr::read_tsv(glue::glue("http://hgdownload.cse.ucsc.edu/goldenpath/{genome}/database/cpgIslandExt.txt.gz"),
                              col_names = c('chr','start','end'),
@@ -291,4 +338,6 @@ getCpGs <- function(genome = genome){
                       symbol = NA) %>%
     plyranges::select(id, tx_id, gene_id, symbol, type) %>% 
     return()
+  }
+  
 }

@@ -248,6 +248,17 @@ getExons <- function(TxDb = TxDb){
 getCpGs <- function(genome = genome){
 
   if(genome == "Dpulex"){
+
+    if(!file.exists("daphnia_pulex.chrom.sizes.txt")){
+            download.file(url = "https://hgdownload.soe.ucsc.edu/hubs/GCF/021/134/715/GCF_021134715.1/GCF_021134715.1.chrom.sizes.txt",
+                          destfile = "daphnia_pulex.chrom.sizes.txt")
+    }
+    
+    chrom_info = read.csv(file = "daphnia_pulex.chrom.sizes.txt",
+                          header = FALSE, sep = "\t",
+                          col.names = c("chr","size"))
+    chrom_info = rbind(chrom_info[order(chrom_info$chr[1:12]),],chrom_info[13,])
+    
     message('Building CpG islands...')
   
     islands = read.csv("CGI-Dpulex.txt",

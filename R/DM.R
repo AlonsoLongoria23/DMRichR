@@ -187,12 +187,6 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   
   print(glue::glue("Building annotations for plotting..."))
   if(is(TxDb, "TxDb")){
-    if(genome == "Dpulex"){
-      if("annotatr" %in% (.packages())){
-        detach("package:annotatr", unload = TRUE) 
-      }
-      devtools::install_github("wassimsalam01/annotatr", force = TRUE)
-    }
     annoTrack <- dmrseq::getAnnot(genome)
   }else if(is(TxDb, "EnsDb")){
     annoTrack <- GenomicRanges::GRangesList(CpGs = DMRichR::getCpGs(genome),

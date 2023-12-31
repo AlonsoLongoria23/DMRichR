@@ -28,7 +28,7 @@
 #' @importMethodsFrom bsseq pData seqnames sampleNames
 #' @export processBismark
 #' 
-processBismark <- function(files = list.files(path = getwd(), pattern = "*.CpG_report.txt.gz"),
+processBismark <- function(files = list.files(path = getwd(), pattern = pattern),
                            meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>% dplyr::mutate_if(is.character, as.factor),
                            testCovariate = testCovariate,
                            adjustCovariate = NULL,
@@ -36,7 +36,10 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.CpG_r
                            coverage = coverage,
                            cores = cores,
                            perGroup = perGroup,
-                           sexCheck = FALSE){
+                           sexCheck = FALSE,
+                           genome = genome,
+                           cytosineReportFormat = cytosineReportFormat,
+                           CX = CX){
   
   cat("\n[DMRichR] Processing Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   start_time <- Sys.time()
@@ -69,14 +72,22 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.CpG_r
                             nThread = 1) # 1L # nThread
   
   print(glue::glue("Assigning sample metadata with {testCovariate} as factor of interest..."))
-  sampleNames(bs) <- gsub( "_.*$","", sampleNames(bs))
+
+  if(cytosineReportFormat == "nf-core/methylseq"){
+    sampleNames(bs) <- gsub( "\\..*$","", sampleNames(bs))
+  } else {
+    sampleNames(bs) <- gsub( "_.*$","", sampleNames(bs)) 
+  }
   meta <- meta[order(match(meta[,1],sampleNames(bs))),]
   stopifnot(sampleNames(bs) == as.character(meta$Name))
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
-  bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
-  GenomeInfoDb::seqlevelsStyle(bs) <- "UCSC"
   
+  if(genome != "Dpulex"){
+    bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
+    GenomeInfoDb::seqlevelsStyle(bs) <- "UCSC"
+  }
+
   if (sexCheck == TRUE) {
 
     # Check sex of samples using k-means clustering
@@ -161,8 +172,12 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.CpG_r
 #    save(sexCheckResult, file = "sexCheckResult.RData")
   }
 
+  if(CX == TRUE){
+    print(glue::glue("Filtering CXs for {testCovariate}..."))
+  } else {
+    print(glue::glue("Filtering CpGs for {testCovariate}..."))  
+  }
   
-  print(glue::glue("Filtering CpGs for {testCovariate}..."))
   pData(bs)[[testCovariate]] <- as.factor(pData(bs)[[testCovariate]])
   loci.cov <- bsseq::getCoverage(bs, type = "Cov")
   
@@ -255,10 +270,16 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.CpG_r
   print(glue::glue("processBismark timing..."))
   end_time <- Sys.time()
   print(end_time - start_time)
-  
-  print(glue::glue("Before filtering for {coverage}x coverage there were {nrow(bs)} CpGs, \\
+
+  if(CX == TRUE){
+    print(glue::glue("Before filtering for {coverage}x coverage there were {nrow(bs)} CXs, \\
+                         after filtering there are {nrow(bs.filtered)} CXs, \\
+                         which is {round(nrow(bs.filtered)/nrow(bs)*100,1)}% of all CXs."))
+  } else {
+    print(glue::glue("Before filtering for {coverage}x coverage there were {nrow(bs)} CpGs, \\
                          after filtering there are {nrow(bs.filtered)} CpGs, \\
                          which is {round(nrow(bs.filtered)/nrow(bs)*100,1)}% of all CpGs."))
+  }
   
   return(bs.filtered)
 }

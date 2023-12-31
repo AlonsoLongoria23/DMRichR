@@ -215,11 +215,17 @@ build_Daphnia_packages <- function(pkgs = pkgs){
     # Chromosome data
     download.file(url = "https://hgdownload.soe.ucsc.edu/hubs/GCF/021/134/715/GCF_021134715.1/GCF_021134715.1.chrom.sizes.txt",
                   destfile = "daphnia_pulex.chrom.sizes.txt")
+    
     chrom_info = read.csv(file = "daphnia_pulex.chrom.sizes.txt",
                           header = FALSE, sep = "\t",
                           col.names = c("chr","size"))
     chrom_info = rbind(chrom_info[order(chrom_info$chr[1:12]),],chrom_info[13,])
-  
+
+    seqinfo_Dpulex = GenomeInfoDb::Seqinfo(seqnames = chrom_info$chr,
+                                           seqlengths = chrom_info$size,
+                                           isCircular = logical(13),
+                                           genome = "Dpulex")
+    
     # Build metadata dataframe
     name = c("Resource URL", "Type of Gene ID", "exon_nrow", "cds_nrow")
     value = c("https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/021/134/715/GCF_021134715.1_ASM2113471v1/", "Entrez Gene ID", "159649", "113453")

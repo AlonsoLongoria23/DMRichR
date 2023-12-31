@@ -72,8 +72,107 @@ annotationDatabases <- function(genome = genome,
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
     glue::glue("Installing {new.packages}")
+    
     if(genome == "Dpulex"){
-      suppressMessages(DMRichR::build_Daphnia_packages(new.packages))
+      suppressMessages(
+        if("BSgenome.Dpulex.NCBI.ASM2113471v1" %in% new.packages){
+          # Load libraries
+          require(BSgenome)
+          require(rtracklayer)
+          
+          # BSgenome.Dpulex.NCBI.ASM2113471v1-seed must be in working directory
+          # Download fna.gz sequence and export as 2bit file
+          download.file(url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/021/134/715/GCF_021134715.1_ASM2113471v1/GCF_021134715.1_ASM2113471v1_genomic.fna.gz",
+                        destfile = "daphnia_pulex.fasta.gz")
+          pulex_fasta = Biostrings::readDNAStringSet("daphnia_pulex.fasta.gz")
+          pulex_2bit = file.path(getwd(), "daphnia_pulex.2bit")
+          rtracklayer::export.2bit(pulex_fasta, pulex_2bit)
+      
+          BSgenome::forgeBSgenomeDataPkg("BSgenome.Dpulex.NCBI.ASM2113471v1-seed", verbose = TRUE)
+          system('R CMD build BSgenome.Dpulex.NCBI.ASM2113471v1/')
+          system('R CMD check BSgenome.Dpulex.NCBI.ASM2113471v1_1.0.0.tar.gz')
+          system('R CMD INSTALL BSgenome.Dpulex.NCBI.ASM2113471v1_1.0.0.tar.gz')
+        } 
+        
+        if("TxDb.Dpulex.NCBI.ASM2113471v1.knownGene" %in% new.packages){
+          # Load libraries
+          require(GenomeInfoDb)
+          require(GenomicFeatures)
+      
+          # Gene Transfer Format (GTF) file
+          download.file(url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/021/134/715/GCF_021134715.1_ASM2113471v1/GCF_021134715.1_ASM2113471v1_genomic.gtf.gz",
+                        destfile = "daphnia_pulex.gtf.gz")
+          # Chromosome data
+          download.file(url = "https://hgdownload.soe.ucsc.edu/hubs/GCF/021/134/715/GCF_021134715.1/GCF_021134715.1.chrom.sizes.txt",
+                        destfile = "daphnia_pulex.chrom.sizes.txt")
+          
+          chrom_info = read.csv(file = "daphnia_pulex.chrom.sizes.txt",
+                                header = FALSE, sep = "\t",
+                                col.names = c("chr","size"))
+          chrom_info = rbind(chrom_info[order(chrom_info$chr[1:12]),],chrom_info[13,])
+      
+          seqinfo_Dpulex = GenomeInfoDb::Seqinfo(seqnames = chrom_info$chr,
+                                                 seqlengths = chrom_info$size,
+                                                 isCircular = logical(13),
+                                                 genome = "Dpulex")
+          
+          # Build metadata dataframe
+          name = c("Resource URL", "Type of Gene ID", "exon_nrow", "cds_nrow")
+          value = c("https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/021/134/715/GCF_021134715.1_ASM2113471v1/", "Entrez Gene ID", "159649", "113453")
+        
+          pulex_metadata = data.frame(name, value)
+        
+          TxDb_pulex = GenomicFeatures::makeTxDbFromGFF(file = "daphnia_pulex.gtf.gz",
+                                                        dataSource = "NCBI",
+                                                        organism = "Daphnia pulex",
+                                                        taxonomyId = 6669,
+                                                        chrominfo = seqinfo_Dpulex,
+                                                        metadata = pulex_metadata)
+          GenomicFeatures::makeTxDbPackage(TxDb_pulex,
+                                           version = "1.0",
+                                           maintainer = "Wassim Salam <wassimsalam49@gmail.com>",
+                                           author = "Wassim Salam",
+                                           destDir = ".",
+                                           pkgname = "TxDb.Dpulex.NCBI.ASM2113471v1.knownGene")
+          install.packages("TxDb.Dpulex.NCBI.ASM2113471v1.knownGene/", repos = NULL, type = "source")
+          
+        }
+        
+        if("org.Dpulex.eg.db" %in% new.packages){
+          # Load libraries
+          require(AnnotationHub)
+          require(AnnotationDbi)
+          require(AnnotationForge)
+          
+          org.Dp.eg.db = AnnotationHub::AnnotationHub()[["AH115573"]]
+          GIDkeys = keys(org.Dp.eg.db,"GID")
+          DpSym = AnnotationDbi::select(org.Dp.eg.db,
+                                        keys = GIDkeys,
+                                        columns = c("GID", "ENTREZID", "SYMBOL", "GENENAME"))
+          
+          DpChr = na.omit(AnnotationDbi::select(org.Dp.eg.db,
+                                                keys = GIDkeys,
+                                                columns = c("GID", "CHR")))
+      
+          DpGO = na.omit(AnnotationDbi::select(org.Dp.eg.db,
+                                               keys = GIDkeys,
+                                               columns = c("GID", "GO", "EVIDENCE")))
+      
+          AnnotationForge::makeOrgPackage(gene_info = DpSym, chromosome = DpChr, go = DpGO,
+                                          version = "1.0",
+                                          maintainer = "Wassim Salam <wassimsalam49@gmail.com>",
+                                          author = "Wassim Salam <wassimsalam49@gmail.com>",
+                                          outputDir = ".",
+                                          tax_id = "6669",
+                                          genus = "Daphnia",
+                                          species = "pulex",
+                                          goTable = "go")
+      
+          install.packages("org.Dpulex.eg.db/", repos = NULL, type = "source")
+        } 
+
+        
+      )
       devtools::install_github("wassimsalam01/annotatr", force = TRUE)
       devtools::install_github("wassimsalam01/ChIPseeker", force = TRUE)
     }else{
@@ -183,103 +282,4 @@ annotationDatabases <- function(genome = genome,
     }
   }
 
-}
-
-build_Daphnia_packages <- function(pkgs = pkgs){
-  
-  if("BSgenome.Dpulex.NCBI.ASM2113471v1" %in% pkgs){
-    # Load libraries
-    require(BSgenome)
-    require(rtracklayer)
-    
-    # BSgenome.Dpulex.NCBI.ASM2113471v1-seed must be in working directory
-    # Download fna.gz sequence and export as 2bit file
-    download.file(url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/021/134/715/GCF_021134715.1_ASM2113471v1/GCF_021134715.1_ASM2113471v1_genomic.fna.gz",
-                  destfile = "daphnia_pulex.fasta.gz")
-    pulex_fasta = Biostrings::readDNAStringSet("daphnia_pulex.fasta.gz")
-    pulex_2bit = file.path(getwd(), "daphnia_pulex.2bit")
-    rtracklayer::export.2bit(pulex_fasta, pulex_2bit)
-
-    BSgenome::forgeBSgenomeDataPkg("BSgenome.Dpulex.NCBI.ASM2113471v1-seed", verbose = TRUE)
-    system('R CMD build BSgenome.Dpulex.NCBI.ASM2113471v1/')
-    system('R CMD check BSgenome.Dpulex.NCBI.ASM2113471v1_1.0.0.tar.gz')
-    system('R CMD INSTALL BSgenome.Dpulex.NCBI.ASM2113471v1_1.0.0.tar.gz')
-  } 
-  
-  if("TxDb.Dpulex.NCBI.ASM2113471v1.knownGene" %in% pkgs){
-    # Load libraries
-    require(GenomeInfoDb)
-    require(GenomicFeatures)
-
-    # Gene Transfer Format (GTF) file
-    download.file(url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/021/134/715/GCF_021134715.1_ASM2113471v1/GCF_021134715.1_ASM2113471v1_genomic.gtf.gz",
-                  destfile = "daphnia_pulex.gtf.gz")
-    # Chromosome data
-    download.file(url = "https://hgdownload.soe.ucsc.edu/hubs/GCF/021/134/715/GCF_021134715.1/GCF_021134715.1.chrom.sizes.txt",
-                  destfile = "daphnia_pulex.chrom.sizes.txt")
-    
-    chrom_info = read.csv(file = "daphnia_pulex.chrom.sizes.txt",
-                          header = FALSE, sep = "\t",
-                          col.names = c("chr","size"))
-    chrom_info = rbind(chrom_info[order(chrom_info$chr[1:12]),],chrom_info[13,])
-
-    seqinfo_Dpulex = GenomeInfoDb::Seqinfo(seqnames = chrom_info$chr,
-                                           seqlengths = chrom_info$size,
-                                           isCircular = logical(13),
-                                           genome = "Dpulex")
-    
-    # Build metadata dataframe
-    name = c("Resource URL", "Type of Gene ID", "exon_nrow", "cds_nrow")
-    value = c("https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/021/134/715/GCF_021134715.1_ASM2113471v1/", "Entrez Gene ID", "159649", "113453")
-  
-    pulex_metadata = data.frame(name, value)
-  
-    TxDb_pulex = GenomicFeatures::makeTxDbFromGFF(file = "daphnia_pulex.gtf.gz",
-                                                  dataSource = "NCBI",
-                                                  organism = "Daphnia pulex",
-                                                  taxonomyId = 6669,
-                                                  chrominfo = seqinfo_Dpulex,
-                                                  metadata = pulex_metadata)
-    GenomicFeatures::makeTxDbPackage(TxDb_pulex,
-                                     version = "1.0",
-                                     maintainer = "Wassim Salam <wassimsalam49@gmail.com>",
-                                     author = "Wassim Salam",
-                                     destDir = ".",
-                                     pkgname = "TxDb.Dpulex.NCBI.ASM2113471v1.knownGene")
-    install.packages("TxDb.Dpulex.NCBI.ASM2113471v1.knownGene/", repos = NULL, type = "source")
-    
-  }
-  
-  if("org.Dpulex.eg.db" %in% pkgs){
-    # Load libraries
-    require(AnnotationHub)
-    require(AnnotationDbi)
-    require(AnnotationForge)
-    
-    org.Dp.eg.db = AnnotationHub::AnnotationHub()[["AH115573"]]
-    GIDkeys = keys(org.Dp.eg.db,"GID")
-    DpSym = AnnotationDbi::select(org.Dp.eg.db,
-                                  keys = GIDkeys,
-                                  columns = c("GID", "ENTREZID", "SYMBOL", "GENENAME"))
-    
-    DpChr = na.omit(AnnotationDbi::select(org.Dp.eg.db,
-                                          keys = GIDkeys,
-                                          columns = c("GID", "CHR")))
-
-    DpGO = na.omit(AnnotationDbi::select(org.Dp.eg.db,
-                                         keys = GIDkeys,
-                                         columns = c("GID", "GO", "EVIDENCE")))
-
-    AnnotationForge::makeOrgPackage(gene_info = DpSym, chromosome = DpChr, go = DpGO,
-                                    version = "1.0",
-                                    maintainer = "Wassim Salam <wassimsalam49@gmail.com>",
-                                    author = "Wassim Salam <wassimsalam49@gmail.com>",
-                                    outputDir = ".",
-                                    tax_id = "6669",
-                                    genus = "Daphnia",
-                                    species = "pulex",
-                                    goTable = "go")
-
-    install.packages("org.Dpulex.eg.db/", repos = NULL, type = "source")
-  } 
 }

@@ -254,7 +254,10 @@ getCpGs <- function(genome = genome){
                    header = TRUE,
                    sep = "\t",
                    colClasses = c(rep(NA,3), rep("NULL",5))) %>%
-    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
+    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE, seqinfo = GenomeInfoDb::Seqinfo(seqnames = chrom_info$chr[1:12],
+                                                                                                       seqlengths = chrom_info$size[1:12],
+                                                                                                       isCircular = logical(12),
+                                                                                                       genome = "Dpulex")) %>%
     # GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>% Dpulex not supported by this function
     plyranges::mutate(id = glue::glue("island:{seq_along(.)}"),
                       type = "islands")

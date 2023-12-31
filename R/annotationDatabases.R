@@ -74,6 +74,8 @@ annotationDatabases <- function(genome = genome,
     glue::glue("Installing {new.packages}")
     if(genome == "Dpulex"){
       suppressMessages(DMRichR::build_Daphnia_packages(new.packages))
+      devtools::install_github("wassimsalam01/annotatr", force = TRUE)
+      devtools::install_github("wassimsalam01/ChIPseeker", force = TRUE)
     }else{
       suppressMessages(BiocManager::install(new.packages, update = FALSE, ask = FALSE, quiet = TRUE))
     }

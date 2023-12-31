@@ -3,13 +3,13 @@
 #' @description Performs the entire DMRichR analysis pipeline, 
 #' which runs most functions in the package.
 #' @param genome Character specifying the genome.
-#' @param coverage Numeric specifying the CpG coverage cutoff (1x recommended).
+#' @param coverage Numeric specifying the C coverage cutoff (1x recommended).
 #' @param perGroup Numeric indicating percent of samples per 
-#' a group to apply the CpG coverage cutoff to (from 0 to 1).
-#' @param minCpGs Numeric for minimum number of CpGs for a DMR.
+#' a group to apply the C coverage cutoff to (from 0 to 1).
+#' @param minCs Numeric for minimum number of Cs for a DMR.
 #' @param maxPerms Numeric indicating number of permutations for the DMR analysis.
 #' @param maxBlockPerms Numeric indicating number of permutations for the block analysis.
-#' @param cutoff Numeric indicating the cutoff value for the single CpG coefficient 
+#' @param cutoff Numeric indicating the cutoff value for the single C coefficient 
 #' utilized to discover testable background regions. Values range from 0 to 1 and 
 #' 0.05 (5 percent) is the default. If you get too many DMRs you should try 0.1 (10 percent).
 #' @param testCovariate Character indicating factor of interest from the design matrix. 
@@ -53,10 +53,10 @@
 DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                             "rheMac8", "rn6", "danRer11", "galGal6",
                             "bosTau9", "panTro6", "dm6", "susScr11",
-                            "canFam3", "TAIR10", "TAIR9"),
+                            "canFam3", "TAIR10", "TAIR9", "Dpulex"),
                  coverage = 1,
                  perGroup = 0.75,
-                 minCpGs = 5,
+                 minCs = 5,
                  maxPerms = 10,
                  maxBlockPerms = 10,
                  cutoff = 0.05,
@@ -66,7 +66,9 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                  cores = 20,
                  GOfuncR = TRUE,
                  sexCheck = FALSE,
-                 EnsDb = FALSE){
+                 EnsDb = FALSE,
+                 cytosineReportFormat = NULL,
+                 CX = FALSE){
   
   
   # Check dmrseq version 
@@ -87,7 +89,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                           "rheMac8", "rn6", "danRer11", "galGal6",
                           "bosTau9", "panTro6", "dm6", "susScr11",
-                          "canFam3", "TAIR10", "TAIR9"))
+                          "canFam3", "TAIR10", "TAIR9", "Dpulex"))
   stopifnot(!is.null(testCovariate))
   stopifnot(coverage >= 1)
   
@@ -115,7 +117,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   print(glue::glue("genome = {genome}"))
   print(glue::glue("coverage = {coverage}"))
   print(glue::glue("perGroup = {perGroup}"))
-  print(glue::glue("minCpGs = {minCpGs}"))
+  print(glue::glue("minCs = {minCs}"))
   print(glue::glue("maxPerms = {maxPerms}"))
   print(glue::glue("maxBlockPerms = {maxBlockPerms}"))
   print(glue::glue("cutoff = {cutoff}"))
@@ -126,6 +128,8 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   print(glue::glue("sexCheck = {sexCheck}"))
   print(glue::glue("EnsDb = {EnsDb}"))
   print(glue::glue("GOfuncR = {GOfuncR}"))
+  print(glue::glue("cytosineReportFormat = {cytosineReportFormat}"))
+  print(glue::glue("CX = {CX}"))
   
   # Setup annotation databases ----------------------------------------------
   
@@ -141,8 +145,25 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   #load("RData/settings.RData")
   
   # Load and process samples ------------------------------------------------
-  
-  bs.filtered <- DMRichR::processBismark(files = list.files(path = getwd(),
+
+  if(CX == TRUE){ # For non-CpG cytosine reports
+    bs.filtered <- DMRichR::processBismark(files = list.files(path = getwd(),
+                                                            pattern = "*.CX_report.txt.gz"),
+                                         meta = openxlsx::read.xlsx("sample_info.xlsx",
+                                                                    colNames = TRUE) %>%
+                                           dplyr::mutate_if(is.character, as.factor),
+                                         testCovariate = testCovariate,
+                                         adjustCovariate = adjustCovariate,
+                                         matchCovariate = matchCovariate,
+                                         coverage = coverage,
+                                         cores = cores,
+                                         perGroup = perGroup,
+                                         sexCheck = sexCheck,
+                                         genome = genome,
+                                         cytosineReportFormat = cytosineReportFormat,
+                                         CX = CX)
+  } else {
+    bs.filtered <- DMRichR::processBismark(files = list.files(path = getwd(),
                                                             pattern = "*.CpG_report.txt.gz"),
                                          meta = openxlsx::read.xlsx("sample_info.xlsx",
                                                                     colNames = TRUE) %>%
@@ -153,7 +174,12 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                                          coverage = coverage,
                                          cores = cores,
                                          perGroup = perGroup,
-                                         sexCheck = sexCheck)
+                                         sexCheck = sexCheck,
+                                         genome = genome,
+                                         cytosineReportFormat = cytosineReportFormat,
+                                         CX = CX)
+  }
+  
   
   print(glue::glue("Saving Rdata..."))
   save(bs.filtered, file = "RData/bismark.RData")
@@ -161,6 +187,12 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   
   print(glue::glue("Building annotations for plotting..."))
   if(is(TxDb, "TxDb")){
+    if(genome == "Dpulex"){
+      if("annotatr" %in% (.packages())){
+        detach("package:annotatr", unload = TRUE) 
+      }
+      devtools::install_github("wassimsalam01/annotatr", force = TRUE)
+    }
     annoTrack <- dmrseq::getAnnot(genome)
   }else if(is(TxDb, "EnsDb")){
     annoTrack <- GenomicRanges::GRangesList(CpGs = DMRichR::getCpGs(genome),
@@ -174,7 +206,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   dir.create("Extra")
   
   DMRichR::getBackground(bs.filtered,
-                         minNumRegion = minCpGs,
+                         minNumRegion = minCs,
                          maxGap = 1000) %>% 
     write.table(file = "Extra/bsseq_background.csv",
                 sep = ",",
@@ -187,7 +219,23 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   start_time <- Sys.time()
   
   tryCatch({
-    blocks <- dmrseq::dmrseq(bs = bs.filtered,
+    if(genome == "Dpulex"){
+      blocks <- dmrseq::dmrseq(bs = bs.filtered,
+                             cutoff = cutoff,
+                             maxPerms = maxBlockPerms,
+                             testCovariate = testCovariate,
+                             adjustCovariate = adjustCovariate,
+                             matchCovariate = matchCovariate,
+                             block = TRUE,
+                             minInSpan = 30,
+                             bpSpan = 1e3,
+                             maxGapSmooth = 1e5,
+                             maxGap = 1e2,
+                             minNumRegion = (minCs*2),
+                             BPPARAM = BiocParallel::MulticoreParam(workers = cores),
+                             blockSize = 1e3)
+    } else {
+      blocks <- dmrseq::dmrseq(bs = bs.filtered,
                              cutoff = cutoff,
                              maxPerms = maxBlockPerms,
                              testCovariate = testCovariate,
@@ -198,9 +246,10 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                              bpSpan = 5e4,
                              maxGapSmooth = 1e6,
                              maxGap = 5e3,
-                             minNumRegion = (minCpGs*2),
-                             BPPARAM = BiocParallel::MulticoreParam(workers = cores)
-    )
+                             minNumRegion = (minCs*2),
+                             BPPARAM = BiocParallel::MulticoreParam(workers = cores))
+    }
+    
     
     print(glue::glue("Selecting significant blocks..."))
     
@@ -287,7 +336,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   
   regions <- dmrseq::dmrseq(bs = bs.filtered,
                             cutoff = cutoff,
-                            minNumRegion = minCpGs,
+                            minNumRegion = minCs,
                             maxPerms = maxPerms,
                             testCovariate = testCovariate,
                             adjustCovariate = adjustCovariate,
@@ -474,10 +523,15 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
     openxlsx::write.xlsx("Global/smoothed_globalStats.xlsx") 
   
   # Global plots ------------------------------------------------------------
-  
+
+  if(genome == "Dpulex"){
+    windows <- bs.filtered.bsseq %>%
+    DMRichR::windows(goi = goi,
+                     size = 100)
+  } else {
   windows <- bs.filtered.bsseq %>%
     DMRichR::windows(goi = goi)
-  
+  }
   CpGs <- bs.filtered.bsseq %>%
     DMRichR::CpGs()
   
@@ -500,9 +554,16 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                          dplyr::pull(!!testCovariate) %>%
                          forcats::fct_rev()){
                 
-                title <- dplyr::case_when(plotMatrix == "windows" ~ "20Kb Windows",
+                if(genome == "Dpulex"){
+                  title <- dplyr::case_when(plotMatrix == "windows" ~ "100b Windows",
                                           plotMatrix == "CpGs" ~ "Single CpG",
                                           plotMatrix == "CGi" ~ "CpG Island")
+                } else {
+                  title <- dplyr::case_when(plotMatrix == "windows" ~ "20Kb Windows",
+                                          plotMatrix == "CpGs" ~ "Single CpG",
+                                          plotMatrix == "CGi" ~ "CpG Island")
+                }
+                
                 
                 plotMatrix %>%
                   get() %>% 
@@ -796,7 +857,44 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   
   cat("\n[DMRichR] Summary \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
-  print(glue::glue("Summary: There were {dmrLength} DMRs that covered {sigRegionPercent} of the genome. \\
+  if(CX == TRUE){
+    print(glue::glue("Summary: There were {dmrLength} DMRs that covered {sigRegionPercent} of the genome. \\
+                   The DMRs were identified from {backgroundLength } background regions that covered {regionPercent} of the genome.
+                   {tidyHyper} of the DMRs were hypermethylated, and {tidyHypo} were hypomethylated. \\
+                   The methylomes consisted of {tidyCpGs} CXs", 
+                   dmrLength = sigRegions %>%
+                     length() %>%
+                     formatC(format = "d", big.mark = ","),
+                   backgroundLength = regions %>%
+                     length() %>%
+                     formatC(format = "d", big.mark = ","),
+                   tidyHyper = (sum(sigRegions$stat > 0) / length(sigRegions)) %>%
+                     scales::percent(),
+                   tidyHypo = (sum(sigRegions$stat < 0) / length(sigRegions)) %>%
+                     scales::percent(),
+                   tidyCpGs = nrow(bs.filtered) %>%
+                     formatC(format = "d", big.mark = ","),
+                   genomeSize = goi %>%
+                     seqinfo() %>%
+                     GenomeInfoDb::keepStandardChromosomes() %>%
+                     as.data.frame() %>%
+                     purrr::pluck("seqlengths") %>%
+                     sum(),
+                   dmrSize = sigRegions %>%
+                     dplyr::as_tibble() %>%
+                     purrr::pluck("width") %>%
+                     sum(),
+                   backgroundSize = regions  %>%
+                     dplyr::as_tibble() %>%
+                     purrr::pluck("width") %>%
+                     sum(),
+                   sigRegionPercent = (dmrSize/genomeSize) %>%
+                     scales::percent(accuracy = 0.01),
+                   regionPercent = (backgroundSize/genomeSize) %>%
+                     scales::percent(accuracy = 0.01)
+                   ))
+  } else{
+    print(glue::glue("Summary: There were {dmrLength} DMRs that covered {sigRegionPercent} of the genome. \\
                    The DMRs were identified from {backgroundLength } background regions that covered {regionPercent} of the genome.
                    {tidyHyper} of the DMRs were hypermethylated, and {tidyHypo} were hypomethylated. \\
                    The methylomes consisted of {tidyCpGs} CpGs.", 
@@ -831,6 +929,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                    regionPercent = (backgroundSize/genomeSize) %>%
                      scales::percent(accuracy = 0.01)
                    ))
+  }
   
   try(if(sum(blocks$pval < 0.05) > 0 & length(blocks) != 0){
     print(glue::glue("{length(sigBlocks)} significant blocks of differential methylation \\

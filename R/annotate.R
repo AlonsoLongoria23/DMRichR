@@ -262,25 +262,7 @@ getCpGs <- function(genome = genome){
     
     message('Building CpG islands...')
 
-    if(!file.exists("CGI-Dpulex.txt")){
-      if(!("makeCGI" %in% installed.packages()[,"Package"])){
-        if(!file.exists("makeCGI_1.3.4.tar.gz")){
-          download.file("https://www.haowulab.org/software/makeCGI/makeCGI_1.3.4.tar.gz")
-          install.packages("makeCGI_1.3.4.tar.gz", repos = NULL, type = "source", quiet = TRUE)
-        }
-      }
-      # 1) Load makeCGI
-      require(makeCGI)
-      # 2) Set up default parameters
-      .CGIoptions = CGIoptions()
-      .CGIoptions$rawdat.type = "BSgenome"
-      .CGIoptions$package = "BSgenome.Dpulex.NCBI.ASM2113471v1"
-      .CGIoptions$species = "Dpulex"
-      .CGIoptions$cutoff.CpG = 0.975
-      # 3) Run makeCGI
-      makeCGI(.CGIoptions)
-    }
-    
+    # CGI-Dpulex.txt must be in work directory
     islands = read.csv("CGI-Dpulex.txt",
                    header = TRUE,
                    sep = "\t",

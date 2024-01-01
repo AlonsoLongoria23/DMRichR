@@ -852,7 +852,44 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   cat("\n[DMRichR] Summary \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
   if(CX == TRUE){
-    print(glue::glue("Summary: There were {dmrLength} DMRs that covered {sigRegionPercent} of the genome. \\
+    if(genome == "Dpulex") {
+      print(glue::glue("Summary: There were {dmrLength} DMRs that covered {sigRegionPercent} of the genome. \\
+                   The DMRs were identified from {backgroundLength } background regions that covered {regionPercent} of the genome.
+                   {tidyHyper} of the DMRs were hypermethylated, and {tidyHypo} were hypomethylated. \\
+                   The methylomes consisted of {tidyCpGs} CXs", 
+                   dmrLength = sigRegions %>%
+                     length() %>%
+                     formatC(format = "d", big.mark = ","),
+                   backgroundLength = regions %>%
+                     length() %>%
+                     formatC(format = "d", big.mark = ","),
+                   tidyHyper = (sum(sigRegions$stat > 0) / length(sigRegions)) %>%
+                     scales::percent(),
+                   tidyHypo = (sum(sigRegions$stat < 0) / length(sigRegions)) %>%
+                     scales::percent(),
+                   tidyCpGs = nrow(bs.filtered) %>%
+                     formatC(format = "d", big.mark = ","),
+                   genomeSize = goi %>%
+                     seqinfo() %>%
+                     #GenomeInfoDb::keepStandardChromosomes() %>%
+                     as.data.frame() %>%
+                     purrr::pluck("seqlengths") %>%
+                     sum(),
+                   dmrSize = sigRegions %>%
+                     dplyr::as_tibble() %>%
+                     purrr::pluck("width") %>%
+                     sum(),
+                   backgroundSize = regions  %>%
+                     dplyr::as_tibble() %>%
+                     purrr::pluck("width") %>%
+                     sum(),
+                   sigRegionPercent = (dmrSize/genomeSize) %>%
+                     scales::percent(accuracy = 0.01),
+                   regionPercent = (backgroundSize/genomeSize) %>%
+                     scales::percent(accuracy = 0.01)
+                   ))
+    } else {
+      print(glue::glue("Summary: There were {dmrLength} DMRs that covered {sigRegionPercent} of the genome. \\
                    The DMRs were identified from {backgroundLength } background regions that covered {regionPercent} of the genome.
                    {tidyHyper} of the DMRs were hypermethylated, and {tidyHypo} were hypomethylated. \\
                    The methylomes consisted of {tidyCpGs} CXs", 
@@ -887,8 +924,46 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                    regionPercent = (backgroundSize/genomeSize) %>%
                      scales::percent(accuracy = 0.01)
                    ))
-  } else{
-    print(glue::glue("Summary: There were {dmrLength} DMRs that covered {sigRegionPercent} of the genome. \\
+    }
+  } else {
+    if(genome == "Dpulex"){
+      print(glue::glue("Summary: There were {dmrLength} DMRs that covered {sigRegionPercent} of the genome. \\
+                   The DMRs were identified from {backgroundLength } background regions that covered {regionPercent} of the genome.
+                   {tidyHyper} of the DMRs were hypermethylated, and {tidyHypo} were hypomethylated. \\
+                   The methylomes consisted of {tidyCpGs} CpGs.", 
+                   dmrLength = sigRegions %>%
+                     length() %>%
+                     formatC(format = "d", big.mark = ","),
+                   backgroundLength = regions %>%
+                     length() %>%
+                     formatC(format = "d", big.mark = ","),
+                   tidyHyper = (sum(sigRegions$stat > 0) / length(sigRegions)) %>%
+                     scales::percent(),
+                   tidyHypo = (sum(sigRegions$stat < 0) / length(sigRegions)) %>%
+                     scales::percent(),
+                   tidyCpGs = nrow(bs.filtered) %>%
+                     formatC(format = "d", big.mark = ","),
+                   genomeSize = goi %>%
+                     seqinfo() %>%
+                     #GenomeInfoDb::keepStandardChromosomes() %>%
+                     as.data.frame() %>%
+                     purrr::pluck("seqlengths") %>%
+                     sum(),
+                   dmrSize = sigRegions %>%
+                     dplyr::as_tibble() %>%
+                     purrr::pluck("width") %>%
+                     sum(),
+                   backgroundSize = regions  %>%
+                     dplyr::as_tibble() %>%
+                     purrr::pluck("width") %>%
+                     sum(),
+                   sigRegionPercent = (dmrSize/genomeSize) %>%
+                     scales::percent(accuracy = 0.01),
+                   regionPercent = (backgroundSize/genomeSize) %>%
+                     scales::percent(accuracy = 0.01)
+                   ))
+    } else {
+      print(glue::glue("Summary: There were {dmrLength} DMRs that covered {sigRegionPercent} of the genome. \\
                    The DMRs were identified from {backgroundLength } background regions that covered {regionPercent} of the genome.
                    {tidyHyper} of the DMRs were hypermethylated, and {tidyHypo} were hypomethylated. \\
                    The methylomes consisted of {tidyCpGs} CpGs.", 
@@ -923,6 +998,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                    regionPercent = (backgroundSize/genomeSize) %>%
                      scales::percent(accuracy = 0.01)
                    ))
+    }
   }
   
   try(if(sum(blocks$pval < 0.05) > 0 & length(blocks) != 0){

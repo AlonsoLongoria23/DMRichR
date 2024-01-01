@@ -227,7 +227,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                              maxGap = 1e2,
                              minNumRegion = minCs,
                              BPPARAM = BiocParallel::MulticoreParam(workers = cores),
-                             blockSize = 2e2)
+                             blockSize = 1e2)
     } else {
       blocks <- dmrseq::dmrseq(bs = bs.filtered,
                              cutoff = cutoff,

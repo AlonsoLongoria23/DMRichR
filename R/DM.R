@@ -775,10 +775,10 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
       if(genome %in% c("mm10", "mm9", "rn6")){
         dbs %>%
           gsub(pattern = "Human", replacement = "Mouse")
-      }else if(genome %in% c("danRer11", "dm6")){
+      }else if(genome %in% c("danRer11", "dm6", "Dpulex")){
         if(genome == "danRer11"){
           enrichR::setEnrichrSite("FishEnrichr")
-        }else if(genome == "dm6"){
+        }else if(genome == "dm6" || genome == "Dpulex"){
           enrichR::setEnrichrSite("FlyEnrichr")}
         dbs <- c("GO_Biological_Process_2018",
                  "GO_Cellular_Component_2018",

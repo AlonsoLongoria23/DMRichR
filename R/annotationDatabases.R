@@ -164,7 +164,8 @@ annotationDatabases <- function(genome = genome,
           install.packages("org.Dpulex.eg.db/", repos = NULL, type = "source", quiet = TRUE)
         } 
         
-      devtools::install_github("wassimsalam01/annotatr", force = TRUE,)
+      devtools::install_github("wassimsalam01/annotatr", force = TRUE)
+      devtools::install_github("wassimsalam01/dmrseq", force = TRUE)
       devtools::install_github("wassimsalam01/ChIPseeker", force = TRUE)
     }else{
       suppressMessages(BiocManager::install(new.packages, update = FALSE, ask = FALSE, quiet = TRUE))

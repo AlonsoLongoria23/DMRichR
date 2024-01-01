@@ -549,7 +549,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                          forcats::fct_rev()){
                 
                 if(genome == "Dpulex"){
-                  title <- dplyr::case_when(plotMatrix == "windows" ~ "100b Windows",
+                  title <- dplyr::case_when(plotMatrix == "windows" ~ "100bp Windows",
                                           plotMatrix == "CpGs" ~ "Single CpG",
                                           plotMatrix == "CGi" ~ "CpG Island")
                 } else {

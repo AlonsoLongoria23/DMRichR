@@ -17,7 +17,7 @@ windows <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                     size = 2e4,
                     goi = goi){
   if (goi@pkgname == "BSgenome.Dpulex.NCBI.ASM2113471v1"){
-    print(glue::glue("Obtaining size bp window individual smoothed methylation values from the {BSgenome::commonName(goi)} genome"))
+    print(glue::glue("Obtaining {size} bp window individual smoothed methylation values from the {BSgenome::commonName(goi)} genome"))
   goi %>%
     GenomeInfoDb::seqlengths() %>%
     GenomicRanges::tileGenome(tilewidth = size,

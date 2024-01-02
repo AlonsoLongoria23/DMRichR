@@ -259,7 +259,7 @@ annotationDatabases <- function(genome = genome,
     assign("goi", BSgenome.Dpulex.NCBI.ASM2113471v1, envir = parent.frame())
     assign("TxDb", TxDb.Dpulex.NCBI.ASM2113471v1.knownGene, envir = parent.frame())
     assign("annoDb", "org.Dpulex.eg.db", envir = parent.frame()) 
-  }else if(){
+  }else if(genome == "ArcticDpulicaria"){
     assign("goi", BSgenome.ArcticDpulicaria, envir = parent.frame())
     assign("TxDb", TxDb.Dpulex.NCBI.ASM2113471v1.knownGene, envir = parent.frame())
     assign("annoDb", "org.Dpulex.eg.db", envir = parent.frame()) 

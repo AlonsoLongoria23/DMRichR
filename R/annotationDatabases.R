@@ -101,7 +101,7 @@ annotationDatabases <- function(genome = genome,
       if("BSgenome.ArcticDpulicaria"  %in% new.packages){
         if(file.exists("BSgenome.ArcticDpulicaria-seed")){
           # Creating BSgenome.ArcticDpulicaria library
-          if(file.exists("arctic_daphnia_pulicaria.fasta.gz"){
+          if(file.exists("arctic_daphnia_pulicaria.fasta.gz")){
             BSgenome::forgeBSgenomeDataPkg("BSgenome.ArcticDpulicaria-seed")
             system('R CMD build BSgenome.ArcticDpulicaria')
             system('R CMD check BSgenome.ArcticDpulicaria_1.0.0.tar.gz')

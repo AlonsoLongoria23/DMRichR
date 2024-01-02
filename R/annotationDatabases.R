@@ -76,7 +76,7 @@ annotationDatabases <- function(genome = genome,
   if(length(new.packages)>0){
     glue::glue("Installing {new.packages}")
     
-    if(genome == "Dpulex" || genome == "ArcticDpulicaria"){
+    if(genome %in% c("Dpulex", "ArcticDpulicaria")){
 
       if("BSgenome.Dpulex.NCBI.ASM2113471v1" %in% new.packages){
         if(file.exists("BSgenome.Dpulex.NCBI.ASM2113471v1-seed")){

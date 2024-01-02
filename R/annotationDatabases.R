@@ -259,10 +259,14 @@ annotationDatabases <- function(genome = genome,
     assign("goi", BSgenome.Dpulex.NCBI.ASM2113471v1, envir = parent.frame())
     assign("TxDb", TxDb.Dpulex.NCBI.ASM2113471v1.knownGene, envir = parent.frame())
     assign("annoDb", "org.Dpulex.eg.db", envir = parent.frame()) 
+  }else if(){
+    assign("goi", BSgenome.ArcticDpulicaria, envir = parent.frame())
+    assign("TxDb", TxDb.Dpulex.NCBI.ASM2113471v1.knownGene, envir = parent.frame())
+    assign("annoDb", "org.Dpulex.eg.db", envir = parent.frame()) 
   }else{
     stop(glue::glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, \\
     rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, TAIR10, \\
-    TAIR9 or Dpulex [Case Sensitive]"))
+    TAIR9, Dpulex or ArcticDpulicaria [Case Sensitive]"))
   }
   
   if(EnsDb == TRUE){

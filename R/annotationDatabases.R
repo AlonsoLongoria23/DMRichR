@@ -101,6 +101,10 @@ annotationDatabases <- function(genome = genome,
         if(file.exists("BSgenome.ArcticDpulicaria-seed")){
           # Creating BSgenome.ArcticDpulicaria library
           if(file.exists("arctic_daphnia_pulicaria.fasta.gz")){
+            pulicaria_fasta = Biostrings::readDNAStringSet("arctic_daphnia_pulicaria.fasta.gz")
+            pulicaria_2bit = file.path(getwd(), "arctic_daphnia_pulicaria.2bit")
+            rtracklayer::export.2bit(pulicaria_fasta, pulicaria_2bit)
+            
             BSgenome::forgeBSgenomeDataPkg("BSgenome.ArcticDpulicaria-seed")
             system('R CMD build BSgenome.ArcticDpulicaria')
             system('R CMD check BSgenome.ArcticDpulicaria_1.0.0.tar.gz')

@@ -778,7 +778,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
       }else if(genome %in% c("danRer11", "dm6", "Dpulex", "ArcticDpulicaria")){
         if(genome == "danRer11"){
           enrichR::setEnrichrSite("FishEnrichr")
-        }else if(genome == "dm6" || genome == "Dpulex", "ArcticDpulicaria"){
+        }else if(genome %in% c("dm6", "Dpulex", "ArcticDpulicaria")){
           enrichR::setEnrichrSite("FlyEnrichr")}
         dbs <- c("GO_Biological_Process_2018",
                  "GO_Cellular_Component_2018",

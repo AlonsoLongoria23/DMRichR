@@ -680,7 +680,9 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   sink()
   
   # Manhattan plot ----------------------------------------------------------
-  
+  if(genome == "Dpulex"){
+    print(glue::glue("Manhattan plot currently not available for genome Dpulex"))
+  } else{
   tryCatch({
     regions %>%
       DMRichR::annotateRegions(TxDb = TxDb,

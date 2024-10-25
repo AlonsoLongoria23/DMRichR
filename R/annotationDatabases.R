@@ -83,10 +83,6 @@ annotationDatabases <- function(genome = genome,
       if("org.Dpulex.eg.db" %in% new.packages){
         install.packages("org.Dpulex.eg.db_1.0.tar.gz", repos = NULL, type = "source")
       }
-      # Install Daphnia-adapted packages  
-      devtools::install_github("wassimsalam01/annotatr", force = TRUE)
-      devtools::install_github("wassimsalam01/dmrseq", force = TRUE)
-      devtools::install_github("wassimsalam01/ChIPseeker", force = TRUE)
     }
     
     suppressMessages(BiocManager::install(new.packages, update = FALSE, ask = FALSE, quiet = TRUE))

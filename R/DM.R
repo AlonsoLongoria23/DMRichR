@@ -683,15 +683,16 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   if(genome == "Dpulex"){
     print(glue::glue("Manhattan plot currently not available for genome Dpulex"))
   } else{
-  tryCatch({
-    regions %>%
-      DMRichR::annotateRegions(TxDb = TxDb,
-                               annoDb = annoDb) %>% 
-      DMRichR::Manhattan()
-  }, 
-  error = function(error_condition) {
-    print(glue::glue("Manhattan plot error"))
-  })
+    tryCatch({
+      regions %>%
+        DMRichR::annotateRegions(TxDb = TxDb,
+                                 annoDb = annoDb) %>% 
+        DMRichR::Manhattan()
+    }, 
+    error = function(error_condition) {
+      print(glue::glue("Manhattan plot error"))
+    })
+  }
   
   # Gene Ontology analyses --------------------------------------------------
   

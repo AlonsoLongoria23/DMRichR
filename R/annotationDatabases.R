@@ -66,17 +66,14 @@ annotationDatabases <- function(genome = genome,
                                                      "org.At.tair.db"),
                                genome == "Dpulex" ~ c("BSgenome.Dpulex.NCBI.ASM2113471v1",
                                                       "TxDb.Dpulex.NCBI.ASM2113471v1.knownGene",
-                                                      "org.Dpulex.eg.db"),
-                               genome == "ArcticDpulicaria" ~ c("BSgenome.ArcticDpulicaria",
-                                                                "TxDb.Dpulex.NCBI.ASM2113471v1.knownGene",
-                                                                "org.Dpulex.eg.db")
+                                                      "org.Dpulex.eg.db")
   )
   
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
     glue::glue("Installing {new.packages}")
     
-    if(genome %in% c("Dpulex", "ArcticDpulicaria")){
+    if(genome == "Dpulex"){
       if("BSgenome.Dpulex.NCBI.ASM2113471v1" %in% new.packages){
         if(file.exists("BSgenome.Dpulex.NCBI.ASM2113471v1-seed")){
           options(timeout = 200)
@@ -92,28 +89,7 @@ annotationDatabases <- function(genome = genome,
           system('R CMD check BSgenome.Dpulex.NCBI.ASM2113471v1_1.0.0.tar.gz')
           system('R CMD INSTALL BSgenome.Dpulex.NCBI.ASM2113471v1_1.0.0.tar.gz') 
         } else {
-          stop("BSgenome.Dpulex.NCBI.ASM2113471v1-seed must be in working directory! See https://github.com/wassimsalam01/thesis for more information!")
-        }
-      }
-      
-      
-      if("BSgenome.ArcticDpulicaria"  %in% new.packages){
-        if(file.exists("BSgenome.ArcticDpulicaria-seed")){
-          # Creating BSgenome.ArcticDpulicaria library
-          if(file.exists("arctic_daphnia_pulicaria.fasta.gz")){
-            pulicaria_fasta = Biostrings::readDNAStringSet("arctic_daphnia_pulicaria.fasta.gz")
-            pulicaria_2bit = file.path(getwd(), "arctic_daphnia_pulicaria.2bit")
-            rtracklayer::export.2bit(pulicaria_fasta, pulicaria_2bit)
-            
-            BSgenome::forgeBSgenomeDataPkg("BSgenome.ArcticDpulicaria-seed")
-            system('R CMD build BSgenome.ArcticDpulicaria')
-            system('R CMD check BSgenome.ArcticDpulicaria_1.0.0.tar.gz')
-            system('R CMD INSTALL BSgenome.ArcticDpulicaria_1.0.0.tar.gz')
-          } else {
-            stop("arctic_daphnia_pulicaria.fasta.gz must be in working directory! See https://github.com/wassimsalam01/snakemake-arctic-pulicaria-pipeline for more information!")
-          }
-        } else {
-          stop("BSgenome.ArcticDpulicaria-seed must be in working directory! See https://github.com/wassimsalam01/thesis for more information!")
+          stop("BSgenome.Dpulex.NCBI.ASM2113471v1-seed must be in working directory! See https://github.com/wassimsalam01/DMRichR-FAIRification for more information!")
         }
       }
     }
@@ -263,14 +239,10 @@ annotationDatabases <- function(genome = genome,
     assign("goi", BSgenome.Dpulex.NCBI.ASM2113471v1, envir = parent.frame())
     assign("TxDb", TxDb.Dpulex.NCBI.ASM2113471v1.knownGene, envir = parent.frame())
     assign("annoDb", "org.Dpulex.eg.db", envir = parent.frame()) 
-  }else if(genome == "ArcticDpulicaria"){
-    assign("goi", BSgenome.ArcticDpulicaria, envir = parent.frame())
-    assign("TxDb", TxDb.Dpulex.NCBI.ASM2113471v1.knownGene, envir = parent.frame())
-    assign("annoDb", "org.Dpulex.eg.db", envir = parent.frame()) 
   }else{
     stop(glue::glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, \\
     rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, TAIR10, \\
-    TAIR9, Dpulex or ArcticDpulicaria [Case Sensitive]"))
+    TAIR9 or Dpulex [Case Sensitive]"))
   }
   
   if(EnsDb == TRUE){

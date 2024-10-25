@@ -53,7 +53,7 @@
 DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                             "rheMac8", "rn6", "danRer11", "galGal6",
                             "bosTau9", "panTro6", "dm6", "susScr11",
-                            "canFam3", "TAIR10", "TAIR9", "Dpulex", "ArcticDpulicaria"),
+                            "canFam3", "TAIR10", "TAIR9", "Dpulex"),
                  coverage = 1,
                  perGroup = 0.75,
                  minCs = 5,
@@ -89,7 +89,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                           "rheMac8", "rn6", "danRer11", "galGal6",
                           "bosTau9", "panTro6", "dm6", "susScr11",
-                          "canFam3", "TAIR10", "TAIR9", "Dpulex", "ArcticDpulicaria"))
+                          "canFam3", "TAIR10", "TAIR9", "Dpulex"))
   stopifnot(!is.null(testCovariate))
   stopifnot(coverage >= 1)
   
@@ -213,7 +213,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   start_time <- Sys.time()
   
   tryCatch({
-    if(genome %in% c("Dpulex", "ArcticDpulicaria")){
+    if(genome == "Dpulex"){
       blocks <- dmrseq::dmrseq(bs = bs.filtered,
                              cutoff = cutoff,
                              maxPerms = maxBlockPerms,
@@ -518,7 +518,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   
   # Global plots ------------------------------------------------------------
 
-  if(genome %in% c("Dpulex", "ArcticDpulicaria")){
+  if(genome == "Dpulex"){
     windows <- bs.filtered.bsseq %>%
     DMRichR::windows(goi = goi,
                      size = 100)
@@ -548,7 +548,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                          dplyr::pull(!!testCovariate) %>%
                          forcats::fct_rev()){
                 
-                if(genome %in% c("Dpulex", "ArcticDpulicaria")){
+                if(genome == "Dpulex"){
                   title <- dplyr::case_when(plotMatrix == "windows" ~ "100bp Windows",
                                           plotMatrix == "CpGs" ~ "Single CpG",
                                           plotMatrix == "CGi" ~ "CpG Island")
@@ -775,10 +775,10 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
       if(genome %in% c("mm10", "mm9", "rn6")){
         dbs %>%
           gsub(pattern = "Human", replacement = "Mouse")
-      }else if(genome %in% c("danRer11", "dm6", "Dpulex", "ArcticDpulicaria")){
+      }else if(genome %in% c("danRer11", "dm6", "Dpulex")){
         if(genome == "danRer11"){
           enrichR::setEnrichrSite("FishEnrichr")
-        }else if(genome %in% c("dm6", "Dpulex", "ArcticDpulicaria")){
+        }else if(genome %in% c("dm6", "Dpulex")){
           enrichR::setEnrichrSite("FlyEnrichr")}
         dbs <- c("GO_Biological_Process_2018",
                  "GO_Cellular_Component_2018",
@@ -852,7 +852,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   cat("\n[DMRichR] Summary \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
   if(CX == TRUE){
-    if(genome %in% c("Dpulex", "ArcticDpulicaria")) {
+    if(genome == "Dpulex") {
       print(glue::glue("Summary: There were {dmrLength} DMRs that covered {sigRegionPercent} of the genome. \\
                    The DMRs were identified from {backgroundLength } background regions that covered {regionPercent} of the genome.
                    {tidyHyper} of the DMRs were hypermethylated, and {tidyHypo} were hypomethylated. \\
@@ -926,7 +926,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                    ))
     }
   } else {
-    if(genome %in% c("Dpulex")){
+    if(genome == "Dpulex"){
       print(glue::glue("Summary: There were {dmrLength} DMRs that covered {sigRegionPercent} of the genome. \\
                    The DMRs were identified from {backgroundLength } background regions that covered {regionPercent} of the genome.
                    {tidyHyper} of the DMRs were hypermethylated, and {tidyHypo} were hypomethylated. \\

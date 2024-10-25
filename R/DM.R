@@ -758,7 +758,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                       width = 10)
   }
   
-  if(genome != "TAIR10" & genome != "TAIR9"){
+  if(genome != "TAIR10" & genome != "TAIR9" & genome != "Dpulex"){
     tryCatch({
       print(glue::glue("Running enrichR"))
       

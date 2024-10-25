@@ -73,101 +73,21 @@ annotationDatabases <- function(genome = genome,
   if(length(new.packages)>0){
     glue::glue("Installing {new.packages}")
     
-    if(genome == "Dpulex"){
+    if(genome == "Dpulex"){      
       if("BSgenome.Dpulex.NCBI.ASM2113471v1" %in% new.packages){
-        if(file.exists("BSgenome.Dpulex.NCBI.ASM2113471v1-seed")){
-          options(timeout = 200)
-          if(!file.exists("daphnia_pulex.fasta.gz")){
-            download.file(url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/021/134/715/GCF_021134715.1_ASM2113471v1/GCF_021134715.1_ASM2113471v1_genomic.fna.gz", destfile = "daphnia_pulex.fasta.gz")
-          }
-          pulex_fasta = Biostrings::readDNAStringSet("daphnia_pulex.fasta.gz")
-          pulex_2bit = file.path(getwd(), "daphnia_pulex.2bit")
-          rtracklayer::export.2bit(pulex_fasta, pulex_2bit)
-          
-          BSgenome::forgeBSgenomeDataPkg("BSgenome.Dpulex.NCBI.ASM2113471v1-seed", verbose = TRUE)
-          system('R CMD build BSgenome.Dpulex.NCBI.ASM2113471v1/')
-          system('R CMD check BSgenome.Dpulex.NCBI.ASM2113471v1_1.0.0.tar.gz')
-          system('R CMD INSTALL BSgenome.Dpulex.NCBI.ASM2113471v1_1.0.0.tar.gz') 
-        } else {
-          stop("BSgenome.Dpulex.NCBI.ASM2113471v1-seed must be in working directory! See https://github.com/wassimsalam01/DMRichR-FAIRification for more information!")
-        }
+       install.packages("BSgenome.Dpulex.NCBI.ASM2113471v1_1.0.0.tar.gz", repos = NULL, type = "source")
       }
+      if("TxDb.Dpulex.NCBI.ASM2113471v1.knownGene" %in% new.packages){
+        install.packages("TxDb.Dpulex.NCBI.ASM2113471v1.knownGene_1.0.tar.gz", repos = NULL, type = "source")
+      }
+      if("org.Dpulex.eg.db" %in% new.packages){
+        install.packages("org.Dpulex.eg.db_1.0.tar.gz", repos = NULL, type = "source")
+      }
+      # Install Daphnia-adapted packages  
+      devtools::install_github("wassimsalam01/annotatr", force = TRUE)
+      devtools::install_github("wassimsalam01/dmrseq", force = TRUE)
+      devtools::install_github("wassimsalam01/ChIPseeker", force = TRUE)
     }
-    
-    if("TxDb.Dpulex.NCBI.ASM2113471v1.knownGene" %in% new.packages) {
-      # Gene Transfer Format (GTF) file
-      if(!file.exists("daphnia_pulex.gtf.gz")){
-        download.file(url = "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/021/134/715/GCF_021134715.1_ASM2113471v1/GCF_021134715.1_ASM2113471v1_genomic.gtf.gz", destfile = "daphnia_pulex.gtf.gz")
-      }
-      # Chromosome data
-      if(!file.exists("daphnia_pulex.chrom.sizes.txt")){
-        download.file(url = "https://hgdownload.soe.ucsc.edu/hubs/GCF/021/134/715/GCF_021134715.1/GCF_021134715.1.chrom.sizes.txt", destfile = "daphnia_pulex.chrom.sizes.txt")
-      }
-      
-      chrom_info = read.csv(file = "daphnia_pulex.chrom.sizes.txt",
-                            header = FALSE, sep = "\t",
-                            col.names = c("chr","size"))
-      chrom_info = rbind(chrom_info[order(chrom_info$chr[1:12]),],chrom_info[13,])
-      
-      seqinfo_Dpulex = GenomeInfoDb::Seqinfo(seqnames = chrom_info$chr,
-                                             seqlengths = chrom_info$size,
-                                             isCircular = logical(13),
-                                             genome = "Dpulex")
-      
-      # Build metadata dataframe
-      name = c("Resource URL", "Type of Gene ID", "exon_nrow", "cds_nrow")
-      value = c("https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/021/134/715/GCF_021134715.1_ASM2113471v1/", "Entrez Gene ID", "159649", "113453")
-      
-      pulex_metadata = data.frame(name, value)
-      
-      TxDb_pulex = GenomicFeatures::makeTxDbFromGFF(file = "daphnia_pulex.gtf.gz",
-                                                    dataSource = "NCBI",
-                                                    organism = "Daphnia pulex",
-                                                    taxonomyId = 6669,
-                                                    chrominfo = seqinfo_Dpulex,
-                                                    metadata = pulex_metadata)
-      GenomicFeatures::makeTxDbPackage(TxDb_pulex,
-                                       version = "1.0",
-                                       maintainer = "Wassim Salam <wassimsalam49@gmail.com>",
-                                       author = "Wassim Salam",
-                                       destDir = ".",
-                                       pkgname = "TxDb.Dpulex.NCBI.ASM2113471v1.knownGene")
-      install.packages("TxDb.Dpulex.NCBI.ASM2113471v1.knownGene/", repos = NULL, type = "source", quiet = TRUE)
-      
-    }
-    
-    if("org.Dpulex.eg.db" %in% new.packages){
-      org.Dp.eg.db = AnnotationHub::AnnotationHub()[["AH115573"]]
-      GIDkeys = keys(org.Dp.eg.db,"GID")
-      DpSym = AnnotationDbi::select(org.Dp.eg.db,
-                                    keys = GIDkeys,
-                                    columns = c("GID", "ENTREZID", "SYMBOL", "GENENAME"))
-      
-      DpChr = na.omit(AnnotationDbi::select(org.Dp.eg.db,
-                                            keys = GIDkeys,
-                                            columns = c("GID", "CHR")))
-      
-      DpGO = na.omit(AnnotationDbi::select(org.Dp.eg.db,
-                                           keys = GIDkeys,
-                                           columns = c("GID", "GO", "EVIDENCE")))
-      
-      AnnotationForge::makeOrgPackage(gene_info = DpSym, chromosome = DpChr, go = DpGO,
-                                      version = "1.0",
-                                      maintainer = "Wassim Salam <wassimsalam49@gmail.com>",
-                                      author = "Wassim Salam <wassimsalam49@gmail.com>",
-                                      outputDir = ".",
-                                      tax_id = "6669",
-                                      genus = "Daphnia",
-                                      species = "pulex",
-                                      goTable = "go")
-      
-      install.packages("org.Dpulex.eg.db/", repos = NULL, type = "source", quiet = TRUE)
-    } 
-    
-    # Install Daphnia-adapted packages  
-    devtools::install_github("wassimsalam01/annotatr", force = TRUE)
-    devtools::install_github("wassimsalam01/dmrseq", force = TRUE)
-    devtools::install_github("wassimsalam01/ChIPseeker", force = TRUE)
     
     suppressMessages(BiocManager::install(new.packages, update = FALSE, ask = FALSE, quiet = TRUE))
     cat("Done", "\n")

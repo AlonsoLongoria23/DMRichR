@@ -53,7 +53,7 @@
 DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                             "rheMac8", "rn6", "danRer11", "galGal6",
                             "bosTau9", "panTro6", "dm6", "susScr11",
-                            "canFam3", "TAIR10", "TAIR9", "Dpulex"),
+                            "canFam3", "TAIR10", "TAIR9", "Dpulex", "Tthymallus"),
                  coverage = 1,
                  perGroup = 0.75,
                  minCs = 5,
@@ -89,7 +89,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                           "rheMac8", "rn6", "danRer11", "galGal6",
                           "bosTau9", "panTro6", "dm6", "susScr11",
-                          "canFam3", "TAIR10", "TAIR9", "Dpulex"))
+                          "canFam3", "TAIR10", "TAIR9", "Dpulex", "Tthymallus"))
   stopifnot(!is.null(testCovariate))
   stopifnot(coverage >= 1)
   

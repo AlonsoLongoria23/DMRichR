@@ -87,7 +87,7 @@ annotationDatabases <- function(genome = genome,
         install.packages("org.Dpulex.eg.db_1.0.tar.gz", repos = NULL, type = "source")
       }
     }
-    if(genome == "Thymallus){
+    if(genome == "Thymallus"){
       if("BSgenome.Thymallus.ASM434828v1" %in% new.packages){
        install.packages("BSgenome.Thymallus.ASM434828v1_1.0.0.tar.gz", repos = NULL, type = "source")
       }

@@ -69,7 +69,7 @@ annotationDatabases <- function(genome = genome,
                                                       "org.Dpulex.eg.db"),
                                genome == "Tthymallus" ~ c("BSgenome.Thymallus.ASM434828v1",
                                                           "TxDb.Thymallus.ASM434828v1",
-                                                          "org.Tthymallus.eg.db"
+                                                          "org.Tthymallus.eg.db")
   )
   
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]

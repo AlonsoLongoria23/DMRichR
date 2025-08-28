@@ -87,7 +87,17 @@ annotationDatabases <- function(genome = genome,
         install.packages("org.Dpulex.eg.db_1.0.tar.gz", repos = NULL, type = "source")
       }
     }
-    
+    if(genome == "Thymallus){
+      if("BSgenome.Thymallus.ASM434828v1" %in% new.packages){
+       install.packages("BSgenome.Thymallus.ASM434828v1_1.0.0.tar.gz", repos = NULL, type = "source")
+      }
+      if("TxDb.Thymallus.ASM434828v1" %in% new.packages){
+        install.packages("TxDb.Thymallus.ASM434828v1_1.0.tar.gz", repos = NULL, type = "source")
+      }
+      if("org.Tthymallus.eg.db" %in% new.packages){
+        install.packages("org.Tthymallus.eg.db_1.1.0.tar.gz", repos = NULL, type = "source")
+      }
+    }
     suppressMessages(BiocManager::install(new.packages, update = FALSE, ask = FALSE, quiet = TRUE))
     cat("Done", "\n")
   }
@@ -158,10 +168,14 @@ annotationDatabases <- function(genome = genome,
     assign("goi", BSgenome.Dpulex.NCBI.ASM2113471v1, envir = parent.frame())
     assign("TxDb", TxDb.Dpulex.NCBI.ASM2113471v1.knownGene, envir = parent.frame())
     assign("annoDb", "org.Dpulex.eg.db", envir = parent.frame()) 
+  }else if(genome == "Tthymallus"){
+    assign("goi", BSgenome.Thymallus.ASM434828v1, envir = parent.frame())
+    assign("TxDb", TxDb.Thymallus.ASM434828v1, envir = parent.frame())
+    assign("annoDb", "org.Tthymallus.eg.db", envir = parent.frame())
   }else{
     stop(glue::glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, \\
     rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, TAIR10, \\
-    TAIR9 or Dpulex [Case Sensitive]"))
+    TAIR9, Dpulex or Thymallus[Case Sensitive]"))
   }
   
   if(EnsDb == TRUE){

@@ -83,11 +83,16 @@ processBismark <- function(files = list.files(path = getwd(), pattern = pattern)
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
   
-  if(genome != "Dpulex"){
-    bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
-    GenomeInfoDb::seqlevelsStyle(bs) <- "UCSC"
-  }
+#  if(genome != "Dpulex"){
+ #   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
+ #   GenomeInfoDb::seqlevelsStyle(bs) <- "UCSC"
+ # }
 
+   if(!(genome %in% c("Dpulex", "Tthymallus"))){
+      bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
+      GenomeInfoDb::seqlevelsStyle(bs) <- "UCSC"
+  }
+  
   if (sexCheck == TRUE) {
 
     # Check sex of samples using k-means clustering

@@ -522,6 +522,9 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
     windows <- bs.filtered.bsseq %>%
     DMRichR::windows(goi = goi,
                      size = 100)
+  } else if (genome == "Tthymallus") {
+  windows <- bs.filtered.bsseq %>%
+    DMRichR::windows(goi = goi, size = 20000)  
   } else {
   windows <- bs.filtered.bsseq %>%
     DMRichR::windows(goi = goi)
@@ -532,7 +535,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   plots <- c("windows", "CpGs")
   
   if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11", "galGal6",
-                   "bosTau9", "panTro6", "dm6", "susScr11", "canFam3")){
+                   "bosTau9", "panTro6", "dm6", "susScr11", "canFam3", "Thymallus")){
     
     CGi <- bs.filtered.bsseq %>% 
       DMRichR::CGi(genome = genome)

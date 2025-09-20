@@ -781,8 +781,8 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
       if(genome %in% c("mm10", "mm9", "rn6")){
         dbs %>%
           gsub(pattern = "Human", replacement = "Mouse")
-      }else if(genome %in% c("danRer11", "dm6", "Dpulex")){
-        if(genome == "danRer11"){
+      }else if(genome %in% c("danRer11", "dm6", "Dpulex", "Tthymallus")){
+        if(genome %in% c("danRer11", "Tthymallus")){
           enrichR::setEnrichrSite("FishEnrichr")
         }else if(genome %in% c("dm6", "Dpulex")){
           enrichR::setEnrichrSite("FlyEnrichr")}

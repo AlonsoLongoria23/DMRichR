@@ -309,6 +309,76 @@ getCpGs <- function(genome = genome){
                       symbol = NA) %>%
     plyranges::select(id, tx_id, gene_id, symbol, type) %>% 
     return()
+    
+} else if (genome == "Tthymallus") {
+    
+    # Check if required local files exist in the working directory
+    if (!file.exists("Thymallus_chr_sizes.txt")) {
+      stop("Chromosome sizes file not found: 'Thymallus_chr_sizes.txt'. Please ensure it's in the working directory.")
+    }
+    if (!file.exists("CGI-Thymallus.txt")) {
+      stop("CpG islands file not found: 'CGI-Thymallus.txt'. Please ensure it's in the working directory.")
+    }
+    
+    # Read chromosome info (expects a tab-separated file with 2 columns: chr name and size)
+    chrom_info <- read.delim(file = "Thymallus_chr_sizes.txt",
+                             header = TRUE,
+                             col.names = c("chr","size"))
+    # Ensure chromosomes are ordered consistently
+    chrom_info <- chrom_info[order(chrom_info$chr), ]
+
+    message('Building CpG islands...')
+
+    # Read CpG islands from local file
+    # Expects a tab-separated file where the first 3 columns are: chromosome, start, end
+    islands <- read.delim("CGI-Thymallus.txt",
+                          header = TRUE,
+                          sep = "\t") %>%
+      GenomicRanges::makeGRangesFromDataFrame(
+        keep.extra.columns = TRUE,
+        seqinfo = GenomeInfoDb::Seqinfo(seqnames   = chrom_info$chr,
+                                        seqlengths = chrom_info$size,
+                                        isCircular = logical(nrow(chrom_info)),
+                                        genome     = "Tthymallus")
+      ) %>%
+      plyranges::mutate(id = glue::glue("island:{seq_along(.)}"),
+                        type = "islands")
+
+    message('Building CpG shores...')
+
+    shores <- islands %>% 
+      plyranges::stretch(4000) %>%     # use 4000 bp to match UCSC definition
+      GenomicRanges::trim() %>%
+      GenomicRanges::setdiff(islands) %>%
+      plyranges::mutate(id = glue::glue("shore:{seq_along(.)}"),
+                        type = "shores")
+
+    message('Building CpG shelves...')
+
+    shelves <- shores %>% 
+      plyranges::stretch(4000) %>%     # use 4000 bp for shelves as well
+      GenomicRanges::trim() %>%
+      GenomicRanges::setdiff(islands) %>%
+      GenomicRanges::setdiff(shores) %>%
+      plyranges::mutate(id = glue::glue("shelf:{seq_along(.)}"),
+                        type = "shelves")
+
+    message('Building inter-CpG-islands...')
+
+    inter_cgi <- c(islands, shores, shelves) %>%
+      GenomicRanges::sort() %>%
+      GenomicRanges::gaps() %>%
+      plyranges::mutate(id = glue::glue("inter:{seq_along(.)}"),
+                        type = "inter")
+
+    c(islands, shores, shelves, inter_cgi) %>%
+      GenomicRanges::sort() %>%
+      plyranges::mutate(tx_id   = NA,
+                        gene_id = NA,
+                        symbol  = NA) %>%
+      plyranges::select(id, tx_id, gene_id, symbol, type) %>% 
+      return()
+
   } else {
     message('Building CpG islands...')
   

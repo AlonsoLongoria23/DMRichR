@@ -68,7 +68,7 @@ annotationDatabases <- function(genome = genome,
                                                       "TxDb.Dpulex.NCBI.ASM2113471v1.knownGene",
                                                       "org.Dpulex.eg.db"),
                                genome == "Tthymallus" ~ c("BSgenome.Thymallus.ASM434828v1",
-                                                          "TxDb.Thymallus.ASM434828v1",
+                                                          "TxDb.Tthymallus.ASM434828v1",
                                                           "org.Tthymallus.eg.db")
   )
   
@@ -91,8 +91,8 @@ annotationDatabases <- function(genome = genome,
       if("BSgenome.Thymallus.ASM434828v1" %in% new.packages){
        install.packages("BSgenome.Thymallus.ASM434828v1_1.0.0.tar.gz", repos = NULL, type = "source")
       }
-      if("TxDb.Thymallus.ASM434828v1" %in% new.packages){
-        install.packages("TxDb.Thymallus.ASM434828v1_1.0.tar.gz", repos = NULL, type = "source")
+      if("TxDb.Tthymallus.ASM434828v1" %in% new.packages){
+        install.packages("TxDb.Tthymallus.ASM434828v1_1.0.tar.gz", repos = NULL, type = "source")
       }
       if("org.Tthymallus.eg.db" %in% new.packages){
         install.packages("org.Tthymallus.eg.db_1.1.0.tar.gz", repos = NULL, type = "source")
@@ -170,7 +170,7 @@ annotationDatabases <- function(genome = genome,
     assign("annoDb", "org.Dpulex.eg.db", envir = parent.frame()) 
   }else if(genome == "Tthymallus"){
     assign("goi", BSgenome.Thymallus.ASM434828v1, envir = parent.frame())
-    assign("TxDb", TxDb.Thymallus.ASM434828v1, envir = parent.frame())
+    assign("TxDb", TxDb.Tthymallus.ASM434828v1, envir = parent.frame())
     assign("annoDb", "org.Tthymallus.eg.db", envir = parent.frame())
   }else{
     stop(glue::glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, \\

@@ -96,7 +96,7 @@ DMRichCpG <- function(sigRegions = sigRegions,
                       regions = regions,
                       genome = genome){
     
-  stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11", "galGal6", "bosTau9", "panTro6", "dm6", "susScr11", "canFam3"))
+  stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11", "galGal6", "bosTau9", "panTro6", "dm6", "susScr11", "canFam3", "Tthymallus"))
   print(glue::glue("Performing CpG annotation enrichment testing for {genome}"))
   
   CGannotations <- genome %>%

@@ -136,25 +136,34 @@ DMReport <- function(sigRegions = sigRegions,
   
   stopifnot(class(sigRegions) == c("tbl_df", "tbl", "data.frame"))
   
+  required_columns <- c("chr",
+                        "start",
+                        "end",
+                        "width",
+                        "CpGs",
+                        "betaCoefficient",
+                        "statistic",
+                        "p.value",
+                        "q.value",
+                        "difference",
+                        "CpG.Island",
+                        "CpG.Shore",
+                        "CpG.Shelf",
+                        "Open.Sea",
+                        "annotation",
+                        "distanceToTSS")
+  optional_columns <- c("geneSymbol", "gene")
+
+  missing_optional <- setdiff(optional_columns, colnames(sigRegions))
+  if (length(missing_optional) > 0) {
+    for (missing_col in missing_optional) {
+      sigRegions[[missing_col]] <- rep(NA_character_, nrow(sigRegions))
+    }
+  }
+
   sigRegions %>%
-    dplyr::select(chr,
-                  start,
-                  end,
-                  width,
-                  CpGs,
-                  betaCoefficient,
-                  statistic,
-                  p.value,
-                  q.value ,
-                  difference,
-                  CpG.Island,
-                  CpG.Shore,
-                  CpG.Shelf,
-                  Open.Sea,
-                  annotation,
-                  distanceToTSS,
-                  geneSymbol,
-                  gene) %>%
+    dplyr::select(tidyselect::all_of(required_columns),
+                  tidyselect::any_of(optional_columns)) %>%
     dplyr::mutate(difference = difference/100) %>% 
     gt::gt() %>%
     gt::tab_header(

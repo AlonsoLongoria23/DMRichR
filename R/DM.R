@@ -53,7 +53,7 @@
 DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                             "rheMac8", "rn6", "danRer11", "galGal6",
                             "bosTau9", "panTro6", "dm6", "susScr11",
-                            "canFam3", "TAIR10", "TAIR9", "Dpulex", "Tthymallus"),
+                            "canFam3", "TAIR10", "TAIR9", "Dpulex", "Tthymallus", "ThyArc1.0"),
                  coverage = 1,
                  perGroup = 0.75,
                  minCs = 5,
@@ -89,7 +89,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                           "rheMac8", "rn6", "danRer11", "galGal6",
                           "bosTau9", "panTro6", "dm6", "susScr11",
-                          "canFam3", "TAIR10", "TAIR9", "Dpulex", "Tthymallus"))
+                          "canFam3", "TAIR10", "TAIR9", "Dpulex", "Tthymallus", "ThyArc1.0"))
   stopifnot(!is.null(testCovariate))
   stopifnot(coverage >= 1)
   
@@ -522,7 +522,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
     windows <- bs.filtered.bsseq %>%
     DMRichR::windows(goi = goi,
                      size = 100)
-  } else if (genome == "Tthymallus") {
+  } else if (genome %in% c("Tthymallus", "ThyArc1.0")) {
   windows <- bs.filtered.bsseq %>%
     DMRichR::windows(goi = goi, size = 20000)  
   } else {
@@ -535,7 +535,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   plots <- c("windows", "CpGs")
   
   if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11", "galGal6",
-                   "bosTau9", "panTro6", "dm6", "susScr11", "canFam3", "Tthymallus")){
+                   "bosTau9", "panTro6", "dm6", "susScr11", "canFam3", "Tthymallus", "ThyArc1.0")){
     
     CGi <- bs.filtered.bsseq %>% 
       DMRichR::CGi(genome = genome)
@@ -781,8 +781,8 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
       if(genome %in% c("mm10", "mm9", "rn6")){
         dbs %>%
           gsub(pattern = "Human", replacement = "Mouse")
-      }else if(genome %in% c("danRer11", "dm6", "Dpulex", "Tthymallus")){
-        if(genome %in% c("danRer11", "Tthymallus")){
+      }else if(genome %in% c("danRer11", "dm6", "Dpulex", "Tthymallus", "ThyArc1.0")){
+        if(genome %in% c("danRer11", "Tthymallus", "ThyArc1.0")){
           enrichR::setEnrichrSite("FishEnrichr")
         }else if(genome %in% c("dm6", "Dpulex")){
           enrichR::setEnrichrSite("FlyEnrichr")}

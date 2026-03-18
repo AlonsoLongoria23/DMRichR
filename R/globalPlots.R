@@ -44,7 +44,23 @@ windows <- function(bs.filtered.bsseq = bs.filtered.bsseq,
       na.omit() %>%
       return()
     
-  } else {
+  } else if (goi@pkgname == "BSgenome.Thymallus.arcticus.ThyArc1.0") {
+    
+    print(glue::glue("Obtaining {size} bp window individual smoothed methylation values from the {BSgenome::commonName(goi)} genome"))
+    goi %>%
+      GenomeInfoDb::seqlengths() %>%
+      GenomicRanges::tileGenome(tilewidth = size,
+                                cut.last.tile.in.chrom = TRUE) %>%
+      bsseq::getMeth(BSseq = bs.filtered.bsseq,
+                     regions = .,
+                     type = "smooth",
+                     what = "perRegion") %>%
+      na.omit() %>%
+      return()
+    
+  }
+  
+  else {
     print(glue::glue("Obtaining {size/1000} Kb window individual smoothed methylation values from the {BSgenome::commonName(goi)} genome"))
   goi %>%
     GenomeInfoDb::seqlengths() %>%

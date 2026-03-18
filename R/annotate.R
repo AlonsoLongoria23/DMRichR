@@ -319,53 +319,57 @@ getCpGs <- function(genome = genome){
     plyranges::select(id, tx_id, gene_id, symbol, type) %>% 
     return()
     
-} else if (genome == "Tthymallus") {
+} else if (genome %in% c("Tthymallus", "ThyArc1.0")) {
     
     # Check if required local files exist in the working directory
-    if (!file.exists("Thymallus_chr_sizes.txt")) {
-      stop("Chromosome sizes file not found: 'Thymallus_chr_sizes.txt'. Please ensure it's in the working directory.")
+    if (genome == "ThyArc1.0") {
+      cgi_file <- "CGI-Tarcticus.txt"
+      size_file <- "Thymallus_arc_chr_sizes.txt"
+        } else {
+      cgi_file <- "CGI-Thymallus.txt"
+      size_file <- "Thymallus_chr_sizes.txt"
+        }
+
+    # 2. Check if required local files exist
+    if (!file.exists(size_file)) {
+      stop(paste("Chromosome sizes file not found:", size_file))
     }
-    if (!file.exists("CGI-Thymallus.txt")) {
-      stop("CpG islands file not found: 'CGI-Thymallus.txt'. Please ensure it's in the working directory.")
+    if (!file.exists(cgi_file)) {
+      stop(paste("CpG islands file not found:", cgi_file))
     }
     
-    # Read chromosome info (expects a tab-separated file with 2 columns: chr name and size)
-    chrom_info <- read.delim(file = "Thymallus_chr_sizes.txt",
-                             header = TRUE,
-                             col.names = c("chr","size"))
-    # Ensure chromosomes are ordered consistently
+# 3. Read chromosome info
+    chrom_info <- read.delim(file = size_file, header = TRUE, sep = "\t")
+    # Ensure consistent ordering
     chrom_info <- chrom_info[order(chrom_info$chr), ]
 
-    message('Building CpG islands...')
+    message(glue::glue('Building CpG islands for {genome}...'))
 
-    # Read CpG islands from local file
-    # Expects a tab-separated file where the first 3 columns are: chromosome, start, end
-    islands <- read.delim("CGI-Thymallus.txt",
-                          header = TRUE,
-                          sep = "\t") %>%
+    # 4. Read CpG islands from the local file
+    islands <- read.delim(cgi_file, header = TRUE, sep = "\t") %>%
       GenomicRanges::makeGRangesFromDataFrame(
         keep.extra.columns = TRUE,
-        seqinfo = GenomeInfoDb::Seqinfo(seqnames   = chrom_info$chr,
-                                        seqlengths = chrom_info$size,
-                                        isCircular = logical(nrow(chrom_info)),
-                                        genome     = "Tthymallus")
+        seqinfo = GenomeInfoDb::Seqinfo(
+          seqnames   = chrom_info$chr,
+          seqlengths = chrom_info$size,
+          isCircular = logical(nrow(chrom_info)),
+          genome     = genome
+        )
       ) %>%
       plyranges::mutate(id = glue::glue("island:{seq_along(.)}"),
                         type = "islands")
 
-    message('Building CpG shores...')
-
+    message('Building CpG shores (4kb stretch)...')
     shores <- islands %>% 
-      plyranges::stretch(4000) %>%     # use 4000 bp to match UCSC definition
+      plyranges::stretch(4000) %>% 
       GenomicRanges::trim() %>%
       GenomicRanges::setdiff(islands) %>%
       plyranges::mutate(id = glue::glue("shore:{seq_along(.)}"),
                         type = "shores")
 
-    message('Building CpG shelves...')
-
+    message('Building CpG shelves (4kb stretch)...')
     shelves <- shores %>% 
-      plyranges::stretch(4000) %>%     # use 4000 bp for shelves as well
+      plyranges::stretch(4000) %>% 
       GenomicRanges::trim() %>%
       GenomicRanges::setdiff(islands) %>%
       GenomicRanges::setdiff(shores) %>%
@@ -373,13 +377,13 @@ getCpGs <- function(genome = genome){
                         type = "shelves")
 
     message('Building inter-CpG-islands...')
-
     inter_cgi <- c(islands, shores, shelves) %>%
       GenomicRanges::sort() %>%
       GenomicRanges::gaps() %>%
       plyranges::mutate(id = glue::glue("inter:{seq_along(.)}"),
                         type = "inter")
 
+    # 5. Final selection and return
     c(islands, shores, shelves, inter_cgi) %>%
       GenomicRanges::sort() %>%
       plyranges::mutate(tx_id   = NA,

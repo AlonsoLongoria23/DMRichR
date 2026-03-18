@@ -88,7 +88,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = pattern)
  #   GenomeInfoDb::seqlevelsStyle(bs) <- "UCSC"
  # }
 
-   if(!(genome %in% c("Dpulex", "Tthymallus"))){
+   if(!(genome %in% c("Dpulex", "Tthymallus", "ThyArc1.0"))){
       bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
       GenomeInfoDb::seqlevelsStyle(bs) <- "UCSC"
   }

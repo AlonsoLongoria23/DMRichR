@@ -70,6 +70,9 @@ annotationDatabases <- function(genome = genome,
                                genome == "Tthymallus" ~ c("BSgenome.Thymallus.ASM434828v1",
                                                           "TxDb.Tthymallus.ASM434828v1",
                                                           "org.Tthymallus.eg.db")
+                                genome == "ThyArc1.0" ~ c("BSgenome.Thymallus.arcticus.ThyArc1.0",
+                                                          "TxDb.Thymallus.arcticus.ThyArc1.0",
+                                                          "org.Tarcticus.eg.db")
   )
   
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
@@ -96,6 +99,18 @@ annotationDatabases <- function(genome = genome,
       }
       if("org.Tthymallus.eg.db" %in% new.packages){
         install.packages("org.Tthymallus.eg.db_1.1.0.tar.gz", repos = NULL, type = "source")
+      }
+    }
+    # Arctic Grayling (T. arcticus) custom packages
+    if(genome == "ThyArc1.0"){
+      if("BSgenome.Thymallus.arcticus.ThyArc1.0" %in% new.packages){
+        install.packages("BSgenome.Thymallus.arcticus.ThyArc1.0_1.0.0.tar.gz", repos = NULL, type = "source")
+      }
+      if("TxDb.Thymallus.arcticus.ThyArc1.0" %in% new.packages){
+        install.packages("TxDb.Thymallus.arcticus.ThyArc1.0_1.0.1.tar.gz", repos = NULL, type = "source")
+      }
+      if("org.Tarcticus.eg.db" %in% new.packages){
+        install.packages("org.Tarcticus.eg.db_1.0.0.tar.gz", repos = NULL, type = "source")
       }
     }
     suppressMessages(BiocManager::install(new.packages, update = FALSE, ask = FALSE, quiet = TRUE))
@@ -172,6 +187,10 @@ annotationDatabases <- function(genome = genome,
     assign("goi", BSgenome.Thymallus.ASM434828v1, envir = parent.frame())
     assign("TxDb", TxDb.Tthymallus.ASM434828v1, envir = parent.frame())
     assign("annoDb", "org.Tthymallus.eg.db", envir = parent.frame())
+    }else if(genome == "ThyArc1.0"){
+    assign("goi", BSgenome.Thymallus.arcticus.ThyArc1.0, envir = parent.frame())
+    assign("TxDb", TxDb.Thymallus.arcticus.ThyArc1.0, envir = parent.frame())
+    assign("annoDb", "org.Tarcticus.eg.db", envir = parent.frame())
   }else{
     stop(glue::glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, \\
     rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, TAIR10, \\

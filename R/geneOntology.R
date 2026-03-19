@@ -13,7 +13,7 @@
 #' @import GenomicRanges
 #' @rawNamespace import(ensembldb, except = c(select, filter))
 #' @importFrom GenomicFeatures genes
-#' @importFrom GenomeInfoDb keepStandardChromosomes as.data.frame seqlevelsStyle genome
+#' @importFrom GenomeInfoDb keepStandardChromosomes seqlevelsStyle genome
 #' @importFrom glue glue
 #' @importFrom magrittr %>%
 #' @importFrom dplyr as_tibble mutate distinct select filter

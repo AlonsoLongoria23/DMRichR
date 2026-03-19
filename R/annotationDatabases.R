@@ -69,7 +69,7 @@ annotationDatabases <- function(genome = genome,
                                                       "org.Dpulex.eg.db"),
                                genome == "Tthymallus" ~ c("BSgenome.Thymallus.ASM434828v1",
                                                           "TxDb.Tthymallus.ASM434828v1",
-                                                          "org.Tthymallus.eg.db")
+                                                          "org.Tthymallus.eg.db"),
                                 genome == "ThyArc1.0" ~ c("BSgenome.Thymallus.arcticus.ThyArc1.0",
                                                           "TxDb.Thymallus.arcticus.ThyArc1.0",
                                                           "org.Tarcticus.eg.db")

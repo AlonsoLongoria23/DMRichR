@@ -6,10 +6,11 @@
 \usage{
 DM.R(
   genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11",
-    "galGal6", "bosTau9", "panTro6", "dm6", "susScr11", "canFam3", "TAIR10", "TAIR9"),
+    "galGal6", "bosTau9", "panTro6", "dm6", "susScr11", "canFam3", "TAIR10", "TAIR9",
+    "Dpulex", "Tthymallus", "ThyArc1.0"),
   coverage = 1,
   perGroup = 0.75,
-  minCpGs = 5,
+  minCs = 5,
   maxPerms = 10,
   maxBlockPerms = 10,
   cutoff = 0.05,
@@ -19,24 +20,26 @@ DM.R(
   cores = 20,
   GOfuncR = TRUE,
   sexCheck = FALSE,
-  EnsDb = FALSE
+  EnsDb = FALSE,
+  cytosineReportFormat = NULL,
+  CX = FALSE
 )
 }
 \arguments{
 \item{genome}{Character specifying the genome.}
 
-\item{coverage}{Numeric specifying the CpG coverage cutoff (1x recommended).}
+\item{coverage}{Numeric specifying the C coverage cutoff (1x recommended).}
 
 \item{perGroup}{Numeric indicating percent of samples per 
-a group to apply the CpG coverage cutoff to (from 0 to 1).}
+a group to apply the C coverage cutoff to (from 0 to 1).}
 
-\item{minCpGs}{Numeric for minimum number of CpGs for a DMR.}
+\item{minCs}{Numeric for minimum number of Cs for a DMR.}
 
 \item{maxPerms}{Numeric indicating number of permutations for the DMR analysis.}
 
 \item{maxBlockPerms}{Numeric indicating number of permutations for the block analysis.}
 
-\item{cutoff}{Numeric indicating the cutoff value for the single CpG coefficient 
+\item{cutoff}{Numeric indicating the cutoff value for the single C coefficient 
 utilized to discover testable background regions. Values range from 0 to 1 and 
 0.05 (5 percent) is the default. If you get too many DMRs you should try 0.1 (10 percent).}
 

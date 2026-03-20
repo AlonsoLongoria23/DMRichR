@@ -5,7 +5,7 @@
 \title{Preprocess cytosine reports}
 \usage{
 processBismark(
-  files = list.files(path = getwd(), pattern = "*.CpG_report.txt.gz"),
+  files = list.files(path = getwd(), pattern = pattern),
   meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) \%>\%
     dplyr::mutate_if(is.character, as.factor),
   testCovariate = testCovariate,
@@ -14,7 +14,10 @@ processBismark(
   coverage = coverage,
   cores = cores,
   perGroup = perGroup,
-  sexCheck = FALSE
+  sexCheck = FALSE,
+  genome = genome,
+  cytosineReportFormat = cytosineReportFormat,
+  CX = CX
 )
 }
 \arguments{

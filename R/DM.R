@@ -249,17 +249,17 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
     
     if(length(blocks) != 0){
       blocks <- blocks %>% 
-        plyranges::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
+        dplyr::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
                                                        stat < 0 ~ "Hypomethylated"),
                           difference = round(beta/pi *100))
     }
     
     if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
       sigBlocks <- blocks %>%
-        plyranges::filter(pval < 0.05)
+        dplyr::filter(pval < 0.05)
     }else if(sum(blocks$qval < 0.05) >= 1){
       sigBlocks <- blocks %>%
-        plyranges::filter(qval < 0.05)
+        dplyr::filter(qval < 0.05)
     }else if(sum(blocks$pval < 0.05) == 0 & length(blocks) != 0){
       glue::glue("No significant blocks detected in {length(blocks)} background blocks")
     }else if(length(blocks) == 0){
@@ -341,16 +341,16 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   print(glue::glue("Selecting significant DMRs..."))
   
   regions <- regions %>% 
-    plyranges::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
+    dplyr::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
                                                    stat < 0 ~ "Hypomethylated"),
                       difference = round(beta/pi *100))
   
   if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
     sigRegions <- regions %>%
-      plyranges::filter(pval < 0.05)
+      dplyr::filter(pval < 0.05)
   }else if(sum(regions$qval < 0.05) >= 100){
     sigRegions <- regions %>%
-      plyranges::filter(qval < 0.05)
+      dplyr::filter(qval < 0.05)
   }else if(sum(regions$pval < 0.05) == 0){
     stop(glue::glue("No significant DMRs detected in {length(regions)} background regions"))
   }

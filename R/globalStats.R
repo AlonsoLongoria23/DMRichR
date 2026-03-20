@@ -88,7 +88,7 @@ globalStats <- function(bs.filtered.bsseq = bs.filtered.bsseq,
     
     CGi <- genome %>%
       DMRichR::getCpGs() %>% 
-      plyranges::filter(type == "islands") %>% 
+      dplyr::filter(type == "islands") %>% 
       bsseq::getMeth(BSseq = bs.filtered.bsseq,
                      regions = .,
                      type = "smooth",

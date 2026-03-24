@@ -2,7 +2,7 @@
 % Please edit documentation in R/annotate.R
 \name{getGenes}
 \alias{getGenes}
-\title{Obtain CpG island, CpG shore, CpG shelf, and open sea annotations}
+\title{Obtain exon annotations for plotting from a TxDb or EnsDb}
 \usage{
 getGenes(TxDb = TxDb, annoDb = annoDb)
 }
@@ -10,25 +10,13 @@ getGenes(TxDb = TxDb, annoDb = annoDb)
 \item{TxDb}{A TxDb or EnsDb annotation object}
 
 \item{annoDb}{Character string naming the OrgDb package, or an OrgDb object}
-
-\item{genome}{Character specifying the genome}
 }
 \value{
-A \code{GRanges} object of CpG island, CpG shore, CpG shelf, and open sea annotations
-
 A GRanges object of annotated exons for plotting
 }
 \description{
-Obtain UCSC CpG islands and build CpG shore, CpG shelf, and open sea annotations.
- This function is based on \code{annotatr:::build_cpg_annots()}; however, 
- it obtains annotations for all genomes in the UCSC genome browser.
-
 Obtain exon/CDS annotations and format for plotDMRs()
 }
 \details{
-getCpGs
-}
-\references{
-Based on \code{annotatr:::build_cpg_annots()},
- see: \url{https://github.com/rcavalcante/annotatr/blob/master/R/build_annotations.R}
+getGenes
 }

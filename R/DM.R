@@ -185,15 +185,33 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   save(bs.filtered, file = "RData/bismark.RData")
   #load("RData/bismark.RData")
   
+  #print(glue::glue("Building annotations for plotting..."))
+  #if(is(TxDb, "TxDb")){
+  #  annoTrack <- dmrseq::getAnnot(genome)
+  #}else if(is(TxDb, "EnsDb")){
+  #  annoTrack <- GenomicRanges::GRangesList(CpGs = DMRichR::getCpGs(genome),
+  #                                          Exons = DMRichR::getExons(TxDb),
+  #                                          compress = FALSE)
+  #}
   print(glue::glue("Building annotations for plotting..."))
-  if(is(TxDb, "TxDb")){
-    annoTrack <- dmrseq::getAnnot(genome)
-  }else if(is(TxDb, "EnsDb")){
-    annoTrack <- GenomicRanges::GRangesList(CpGs = DMRichR::getCpGs(genome),
-                                            Exons = DMRichR::getExons(TxDb),
-                                            compress = FALSE)
-  }
-  
+
+if (is(TxDb, "TxDb")) {
+  print(glue::glue("Retrieving local annotations for {genome}"))
+
+  annoTrack <- GenomicRanges::GRangesList(
+    CpGs  = DMRichR::getCpGs(genome),
+    Exons = DMRichR::getGenes(TxDb = TxDb, annoDb = annoDb),
+    compress = FALSE
+  )
+
+} else if (is(TxDb, "EnsDb")) {
+
+  annoTrack <- GenomicRanges::GRangesList(
+    CpGs  = DMRichR::getCpGs(genome),
+    Exons = DMRichR::getExons(TxDb),
+    compress = FALSE
+  )
+}
   # Background --------------------------------------------------------------
   
   cat("\n[DMRichR] Getting bsseq background regions \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")

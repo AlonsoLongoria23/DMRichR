@@ -255,6 +255,110 @@ getExons <- function(TxDb = TxDb){
 #'  see: \url{https://github.com/rcavalcante/annotatr/blob/master/R/build_annotations.R}
 #' @export getCpGs
 #' 
+
+#' getGenes
+#' @title Obtain exon annotations for plotting from a TxDb or EnsDb
+#' @description Obtain exon/CDS annotations and format for plotDMRs()
+#' @param TxDb A TxDb or EnsDb annotation object
+#' @param annoDb Character string naming the OrgDb package, or an OrgDb object
+#' @return A GRanges object of annotated exons for plotting
+#' @rawNamespace import(ensembldb, except = c(select, filter))
+#' @importFrom GenomicFeatures exonsBy
+#' @importFrom AnnotationDbi select keytypes columns
+#' @importFrom BiocGenerics unlist
+#' @importFrom GenomeInfoDb genome
+#' @importFrom glue glue
+#' @importFrom dplyr mutate select
+#' @export getGenes
+getGenes <- function(TxDb = TxDb, annoDb = annoDb){
+
+  stopifnot(is(TxDb, "TxDb") || is(TxDb, "EnsDb"))
+
+  message("Building genes/exons for plotting...")
+
+  if (is.character(annoDb)) {
+    suppressPackageStartupMessages(require(annoDb, character.only = TRUE))
+    annoDb_obj <- get(annoDb)
+  } else {
+    annoDb_obj <- annoDb
+  }
+
+  genome_name <- unique(GenomeInfoDb::genome(TxDb))
+  genome_name <- genome_name[!is.na(genome_name)]
+  if (length(genome_name) == 0) {
+    genome_name <- "unknownGenome"
+  } else {
+    genome_name <- genome_name[1]
+  }
+
+  if (is(TxDb, "EnsDb")) {
+
+    exons <- TxDb %>%
+      ensembldb::cdsBy(
+        by = "tx",
+        columns = c("tx_id", "gene_id", "symbol")
+      ) %>%
+      BiocGenerics::unlist(use.names = FALSE) %>%
+      dplyr::mutate(
+        id = glue::glue("CDS:{seq_along(.)}"),
+        type = glue::glue("{genome_name}_genes_cds")
+      ) %>%
+      dplyr::select(id, tx_id, gene_id, symbol, type)
+
+    GenomeInfoDb::genome(exons) <- NA
+    ensembldb::seqlevelsStyle(exons) <- "UCSC"
+
+    return(exons)
+  }
+
+  exon_list <- GenomicFeatures::exonsBy(TxDb, by = "gene")
+  exons <- BiocGenerics::unlist(exon_list, use.names = FALSE)
+
+  gene_ids <- names(exon_list)
+  exon_gene_id <- rep(gene_ids, lengths(exon_list))
+
+  available_keytypes <- AnnotationDbi::keytypes(annoDb_obj)
+  keytype_to_use <- if ("GID" %in% available_keytypes) "GID" else "ENTREZID"
+
+  available_cols <- AnnotationDbi::columns(annoDb_obj)
+  wanted_cols <- intersect(c("SYMBOL", "GENENAME"), available_cols)
+
+  anno_tbl <- AnnotationDbi::select(
+    annoDb_obj,
+    keys = unique(exon_gene_id),
+    keytype = keytype_to_use,
+    columns = wanted_cols
+  )
+
+  anno_tbl <- anno_tbl[!duplicated(anno_tbl[[keytype_to_use]]), , drop = FALSE]
+  rownames(anno_tbl) <- anno_tbl[[keytype_to_use]]
+
+  symbol_vec <- if ("SYMBOL" %in% colnames(anno_tbl)) {
+    anno_tbl[exon_gene_id, "SYMBOL", drop = TRUE]
+  } else {
+    rep(NA_character_, length(exon_gene_id))
+  }
+
+  tx_ids <- rep(NA_character_, length(exons))
+  if ("tx_name" %in% names(S4Vectors::mcols(exons))) {
+    tx_ids <- as.character(S4Vectors::mcols(exons)$tx_name)
+  } else if ("tx_id" %in% names(S4Vectors::mcols(exons))) {
+    tx_ids <- as.character(S4Vectors::mcols(exons)$tx_id)
+  }
+
+  S4Vectors::mcols(exons)$id <- glue::glue("exon:{seq_along(exons)}")
+  S4Vectors::mcols(exons)$tx_id <- tx_ids
+  S4Vectors::mcols(exons)$gene_id <- exon_gene_id
+  S4Vectors::mcols(exons)$symbol <- symbol_vec
+  S4Vectors::mcols(exons)$type <- glue::glue("{genome_name}_genes_exons")
+
+  exons <- dplyr::select(exons, id, tx_id, gene_id, symbol, type)
+
+  GenomeInfoDb::genome(exons) <- NA
+
+  return(exons)
+}
+
 getCpGs <- function(genome = genome){
 
   if(genome == "Dpulex"){

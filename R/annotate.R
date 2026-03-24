@@ -239,23 +239,6 @@ getExons <- function(TxDb = TxDb){
   return(exons)
 }
 
-#' getCpGs
-#' @title Obtain CpG island, CpG shore, CpG shelf, and open sea annotations
-#' @description Obtain UCSC CpG islands and build CpG shore, CpG shelf, and open sea annotations.
-#'  This function is based on \code{annotatr:::build_cpg_annots()}; however, 
-#'  it obtains annotations for all genomes in the UCSC genome browser.
-#' @param genome Character specifying the genome
-#' @return A \code{GRanges} object of CpG island, CpG shore, CpG shelf, and open sea annotations
-#' @importFrom GenomicRanges makeGRangesFromDataFrame mcols trim setdiff sort gaps
-#' @importFrom GenomeInfoDb keepStandardChromosomes
-#' @importFrom glue glue
-#' @importFrom magrittr %>%
-#' @importFrom plyranges stretch mutate select
-#' @references Based on \code{annotatr:::build_cpg_annots()},
-#'  see: \url{https://github.com/rcavalcante/annotatr/blob/master/R/build_annotations.R}
-#' @export getCpGs
-#' 
-
 #' getGenes
 #' @title Obtain exon annotations for plotting from a TxDb or EnsDb
 #' @description Obtain exon/CDS annotations and format for plotDMRs()
@@ -359,6 +342,22 @@ getGenes <- function(TxDb = TxDb, annoDb = annoDb){
   return(exons)
 }
 
+#' getCpGs
+#' @title Obtain CpG island, CpG shore, CpG shelf, and open sea annotations
+#' @description Obtain UCSC CpG islands and build CpG shore, CpG shelf, and open sea annotations.
+#'  This function is based on \code{annotatr:::build_cpg_annots()}; however, 
+#'  it obtains annotations for all genomes in the UCSC genome browser.
+#' @param genome Character specifying the genome
+#' @return A \code{GRanges} object of CpG island, CpG shore, CpG shelf, and open sea annotations
+#' @importFrom GenomicRanges makeGRangesFromDataFrame mcols trim setdiff sort gaps
+#' @importFrom GenomeInfoDb keepStandardChromosomes
+#' @importFrom glue glue
+#' @importFrom magrittr %>%
+#' @importFrom plyranges stretch mutate select
+#' @references Based on \code{annotatr:::build_cpg_annots()},
+#'  see: \url{https://github.com/rcavalcante/annotatr/blob/master/R/build_annotations.R}
+#' @export getCpGs
+#' 
 getCpGs <- function(genome = genome){
 
   if(genome == "Dpulex"){
